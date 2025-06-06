@@ -245,7 +245,7 @@ onMounted(() => {
   const renderRecaptcha = () => {
     if (window.grecaptcha) {
       window.grecaptcha.render('recaptcha-container', {
-        sitekey: '6LeSaTIrAAAAAKUISWV1I9lpPKEfntCrGP5t3WeH',
+        sitekey: '6Ld0dVcrAAAAAM2HhRCZaHkURQ96XMmSvi5MWbDW',
       });
     } else {
       setTimeout(renderRecaptcha, 500); 
