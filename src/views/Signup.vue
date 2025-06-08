@@ -291,11 +291,14 @@ const handleSignup = async () => {
   try {
     loading.value = true;
 
+    const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
     const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/signup`, {
       username: username.value,
       email: email.value,
       password: password.value,
       recaptchaResponse,
+      timezone: userTimezone,
     });
 
     if (response.status === 201) {
