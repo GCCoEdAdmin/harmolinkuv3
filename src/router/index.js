@@ -43,7 +43,7 @@ const routes = [
   { path: '/feed', component: Feed },
   { path: '/profile/:id', component: Profile },
   { path: '/profile', component: Profile },
-  { path: "/:pathMatch(.*)*", redirect: "/#/login" },
+  { path: "/:pathMatch(.*)*", redirect: "/login" },
 ];
 
 const router = createRouter({
