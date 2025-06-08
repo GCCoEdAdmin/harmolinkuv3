@@ -692,7 +692,7 @@ async function deleteMixtape(index) {
   const mix = mixtapes.value[index];
   try {
     const token = localStorage.getItem('token');
-    await axios.delete(`http://localhost:3000/api/mixtapes/${mix.id}`, {
+    await axios.delete(`https://harmolinku-back.onrender.com/api/mixtapes/${mix.id}`, {
       headers: {
         Authorization: `Bearer ${token}`
       }
