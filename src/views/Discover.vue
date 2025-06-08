@@ -51,6 +51,25 @@
               </div>
               <!-- Front Side (Profile Details) -->
               <div class="front" v-if="currentProfile">
+                <!-- Add this debug div temporarily -->
+                <div
+                  style="
+                    font-size: 0.8rem;
+                    background: rgba(0, 0, 0, 0.1);
+                    padding: 0.5rem;
+                    margin-bottom: 1rem;
+                  "
+                >
+                  <strong>DEBUG:</strong>
+                  <br />
+                  Raw cover: {{ currentProfile.mixtapes[0]?.cover }}
+                  <br />
+                  Raw photo_url: {{ currentProfile.mixtapes[0]?.photo_url }}
+                  <br />
+                  Processed URL:
+                  {{ getFullPhotoUrl(currentProfile.mixtapes[0]?.cover) }}
+                </div>
+
                 <div class="discover-top">
                   <div class="refresh-wrapper">
                     <span class="refresh-label">Next Refresh:</span><br />
@@ -72,6 +91,12 @@
                   <img
                     :src="getFullPhotoUrl(currentProfile.mixtapes[0]?.cover)"
                     class="mixtape-image"
+                    @error="
+                      console.log(
+                        'Image failed to load:',
+                        currentProfile.mixtapes[0]?.cover
+                      )
+                    "
                   />
                   <h2 class="mixtape-title-front">
                     {{ currentProfile.mixtapes[0]?.name }}
@@ -98,6 +123,25 @@
 
               <!-- Back Side (Mixtape Details) -->
               <div class="back" v-if="currentProfile">
+                <!-- Add this debug div temporarily -->
+                <div
+                  style="
+                    font-size: 0.8rem;
+                    background: rgba(0, 0, 0, 0.1);
+                    padding: 0.5rem;
+                    margin-bottom: 1rem;
+                  "
+                >
+                  <strong>DEBUG:</strong>
+                  <br />
+                  Raw cover: {{ currentProfile.mixtapes[0]?.cover }}
+                  <br />
+                  Raw photo_url: {{ currentProfile.mixtapes[0]?.photo_url }}
+                  <br />
+                  Processed URL:
+                  {{ getFullPhotoUrl(currentProfile.mixtapes[0]?.cover) }}
+                </div>
+
                 <div class="back-button" @click="flipCard">
                   <i class="fa-solid fa-arrow-left"></i>
                 </div>
@@ -389,23 +433,42 @@ async function fetchProfiles() {
 
     console.log("API Response:", response.data); // Debug log
 
-    profiles.value = response.data.map((profile) => ({
-      ...profile,
-      viewed: false,
-      mixtapes: (profile.mixtapes || []).map((mixtape) => ({
-        ...mixtape,
-        // Ensure we're using the correct field names
-        cover: mixtape.cover || mixtape.photo_url, // Handle both possible field names
-        songs: (mixtape.songs || []).map((song) => ({
-          ...song,
-          song_name: song.name || song.song_name,
-          artist_name: song.artist || song.artist_name,
-          preview_url: song.preview_url || song.url,
-          artwork_url: song.artwork_url || song.artworkUrl100 || song.artwork,
-        })),
-      })),
-    }));
+    profiles.value = response.data.map((profile) => {
+      console.log("Processing profile:", profile.username);
+      console.log("Raw mixtapes data:", profile.mixtapes);
 
+      return {
+        ...profile,
+        viewed: false,
+        mixtapes: (profile.mixtapes || []).map((mixtape, index) => {
+          console.log(`Mixtape ${index} raw data:`, mixtape);
+          console.log(`Mixtape ${index} photo_url:`, mixtape.photo_url);
+          console.log(`Mixtape ${index} cover:`, mixtape.cover);
+
+          const processedMixtape = {
+            ...mixtape,
+            // Ensure we're using the correct field names
+            cover: mixtape.cover || mixtape.photo_url, // Handle both possible field names
+            songs: (mixtape.songs || []).map((song) => ({
+              ...song,
+              song_name: song.name || song.song_name,
+              artist_name: song.artist || song.artist_name,
+              preview_url: song.preview_url || song.url,
+              artwork_url:
+                song.artwork_url || song.artworkUrl100 || song.artwork,
+            })),
+          };
+
+          console.log(
+            `Processed mixtape ${index} cover:`,
+            processedMixtape.cover
+          );
+          return processedMixtape;
+        }),
+      };
+    });
+
+    console.log("Final processed profiles:", profiles.value);
     currentIndex.value = 0;
     viewedProfiles.value = 0;
     saveStateToLocalStorage();
@@ -705,26 +768,33 @@ function filterProfiles() {
 
 // Utility function to get full photo URL
 function getFullPhotoUrl(photoUrl) {
+  console.log("getFullPhotoUrl called with:", photoUrl);
+
   if (!photoUrl) {
+    console.log("No photoUrl provided, returning placeholder");
     return "https://res.cloudinary.com/dmlzg1ouv/image/upload/v1749412320/noimage_jvys4b.jpg";
   }
 
   // If it's already a full Cloudinary URL, return as is
   if (photoUrl.startsWith("https://res.cloudinary.com/")) {
+    console.log("Already a Cloudinary URL, returning as-is:", photoUrl);
     return photoUrl;
   }
 
   // If it's the old backend upload URL, return placeholder
   if (photoUrl.startsWith("https://harmolinku-back.onrender.com/uploads/")) {
+    console.log("Old backend URL detected, returning placeholder");
     return "https://res.cloudinary.com/dmlzg1ouv/image/upload/v1749412320/noimage_jvys4b.jpg";
   }
 
   // If it's just an http URL (old format), return placeholder
   if (photoUrl.startsWith("http://")) {
+    console.log("HTTP URL detected, returning placeholder");
     return "https://res.cloudinary.com/dmlzg1ouv/image/upload/v1749412320/noimage_jvys4b.jpg";
   }
 
   // Otherwise return the URL as is (should be a valid Cloudinary URL)
+  console.log("Unknown URL format, returning as-is:", photoUrl);
   return photoUrl;
 }
 
