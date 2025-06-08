@@ -789,7 +789,10 @@ onMounted(() => {
 });
 
 async function getFullPhotoUrl(photoUrl) {
-  if (!photoUrl) {
+  if (
+    !photoUrl ||
+    photoUrl.startsWith("https://harmolinku-back.onrender.com/uploads/")
+  ) {
     return "https://res.cloudinary.com/dmlzg1ouv/image/upload/v1749412320/noimage_jvys4b.jpg";
   }
   if (photoUrl.startsWith("http")) return photoUrl;
@@ -2385,6 +2388,7 @@ button {
   color: #322848;
   background: rgba(255, 255, 255, 0.495);
   text-align: center;
+  border-radius: 5px;
 }
 .mixtape-name:focus,
 .description-box:focus {

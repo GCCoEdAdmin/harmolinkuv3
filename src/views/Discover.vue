@@ -692,7 +692,10 @@ function filterProfiles() {
 
 // Utility function to get full photo URL
 function getFullPhotoUrl(photoUrl) {
-  if (!photoUrl) {
+  if (
+    !photoUrl ||
+    photoUrl.startsWith("https://harmolinku-back.onrender.com/uploads/")
+  ) {
     return "https://res.cloudinary.com/dmlzg1ouv/image/upload/v1749412320/noimage_jvys4b.jpg";
   }
   if (photoUrl.startsWith("http")) return photoUrl;
