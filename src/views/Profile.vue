@@ -728,7 +728,8 @@ import { useRoute } from "vue-router";
 
 const sortOption = ref("az");
 const mixtapes = ref([]);
-const DEFAULT_PROFILE_IMAGE = "/src/assets/default-profile.jpg";
+const DEFAULT_PROFILE_IMAGE =
+  "https://res.cloudinary.com/dmlzg1ouv/image/upload/v1749422173/default-profile_xrj2ri.jpg";
 const myPollTabs = ref(false);
 const myMixtapesTab = ref(true);
 const showSongModalEdit = ref(false);
