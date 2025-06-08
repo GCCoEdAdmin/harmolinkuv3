@@ -1,255 +1,265 @@
 <template>
-<!-- MIXTAPE OVERLAY VIEW -->
-          <div v-if="selectedMixtape" class="mixtape-detail-overlay">
-          <div class="mixtape-detail-box">
-            <span class="close-detail" @click="selectedMixtape = null"
-              >&times;</span
-            >
+  <!-- MIXTAPE OVERLAY VIEW -->
+  <div v-if="selectedMixtape" class="mixtape-detail-overlay">
+    <div class="mixtape-detail-box">
+      <span class="close-detail" @click="selectedMixtape = null">&times;</span>
+      <img :src="getFullPhotoUrl(selectedMixtape.cover)" class="detail-img" />
+      <h2>{{ selectedMixtape.name }}</h2>
+      <p>{{ selectedMixtape.description }}</p>
+      <p>{{ selectedMixtape.bio }}</p>
+      <ul class="song-detail-list">
+        <li
+          v-for="(song, i) in selectedMixtape.songs"
+          :key="i"
+          style="display: flex; align-items: center; gap: 10px"
+        >
+          <img
+            :src="
+              song.artwork_url ||
+              'https://res.cloudinary.com/dmlzg1ouv/image/upload/v1749412320/noimage_jvys4b.jpg'
+            "
+            alt="Artwork"
+            style="
+              width: 40px;
+              height: 40px;
+              border-radius: 4px;
+              margin-bottom: 3px;
+            "
+          />
+          <span style="flex: 1">{{ song.name }} - {{ song.artist }}</span>
+          <button
+            v-if="song.preview_url"
+            class="mini-audio-btn"
+            @click="toggleSongPlay(i)"
+            :aria-label="
+              playingSongIndex === i ? 'Pause preview' : 'Play preview'
+            "
+            style="margin-left: 8px"
+          >
+            <i
+              :class="
+                playingSongIndex === i
+                  ? 'fa-solid fa-pause'
+                  : 'fa-solid fa-play'
+              "
+            ></i>
+          </button>
+          <audio
+            v-if="song.preview_url"
+            ref="songAudioRefs"
+            :src="song.preview_url"
+            @ended="onSongAudioEnded"
+            style="display: none"
+          ></audio>
+        </li>
+      </ul>
+    </div>
+  </div>
+  <!-- END OF MIXTAPE OVERLAY VIEW -->
+
+  <!-- Popup confirmation Delete Mixtape-->
+  <div v-if="showConfirmDelete" class="modal-overlay">
+    <div class="confirm-box">
+      <p>Are you sure you want to delete mixtape?</p>
+      <div class="confirm-buttons">
+        <button
+          @click="
+            deleteMixtape(showConfirmDelete);
+            showConfirmDelete = null;
+          "
+        >
+          Yes
+        </button>
+        <button @click="showConfirmDelete = false">No</button>
+      </div>
+    </div>
+  </div>
+  <!-- Popup confirmation DeleteMixtape-->
+
+  <!--START OF POPUP FOR CREATE MIXTAPE-->
+  <div v-if="showPopup" class="popup-overlay">
+    <div class="popup-box">
+      <h2 v-if="createAction">Your Mixtape</h2>
+      <div class="upload-box" @click="triggerPhotoUpload">
+        <img v-if="photoUrl" :src="photoUrl" class="photo-preview" />
+        <span v-else>Add photo</span>
+        <input
+          type="file"
+          accept=".jpg, .jpeg, .png"
+          ref="photoInput"
+          @change="handlePhotoUpload"
+          hidden
+        />
+      </div>
+
+      <input
+        type="text"
+        placeholder="Mixtape Name"
+        class="mixtape-name"
+        v-model="mixtapeName"
+      />
+      <textarea
+        v-model="mixtapeDescription"
+        placeholder="Say something about your mixtape"
+        class="description-box"
+      ></textarea>
+
+      <div class="song-list-scroll">
+        <div
+          v-for="(song, index) in songs"
+          :key="index"
+          class="song-item song-item-flex"
+        >
+          <div class="song-details-flex">
             <img
-              :src="getFullPhotoUrl(selectedMixtape.cover)"
-              class="detail-img"
+              v-if="song.artwork_url"
+              :src="song.artwork_url"
+              alt="Artwork"
+              class="search-artwork"
+              style="height: 40px"
             />
-            <h2>{{ selectedMixtape.name }}</h2>
-            <p>{{ selectedMixtape.description }}</p>
-            <p>{{ selectedMixtape.bio }}</p>
-            <ul class="song-detail-list">
-              <li
-                v-for="(song, i) in selectedMixtape.songs"
-                :key="i"
-                style="display: flex; align-items: center; gap: 10px"
-              >
-                <img
-                  :src="song.artwork_url || '/src/assets/noimage.jpg'"
-                  alt="Artwork"
-                  style="width: 40px; height: 40px; border-radius: 4px; margin-bottom:3px"
-                />
-                <span style="flex: 1">{{ song.name }} - {{ song.artist }}</span>
-                <button
-                  v-if="song.preview_url"
-                  class="mini-audio-btn"
-                  @click="toggleSongPlay(i)"
-                  :aria-label="
-                    playingSongIndex === i ? 'Pause preview' : 'Play preview'
-                  "
-                  style="margin-left: 8px"
-                >
-                  <i
-                    :class="
-                      playingSongIndex === i
-                        ? 'fa-solid fa-pause'
-                        : 'fa-solid fa-play'
-                    "
-                  ></i>
-                </button>
-                <audio
-                  v-if="song.preview_url"
-                  ref="songAudioRefs"
-                  :src="song.preview_url"
-                  @ended="onSongAudioEnded"
-                  style="display: none"
-                ></audio>
-              </li>
-            </ul>
-          </div>
-        </div>
-<!-- END OF MIXTAPE OVERLAY VIEW -->
-
-
-
-      <!-- Popup confirmation Delete Mixtape-->
-           <div v-if="showConfirmDelete" class="modal-overlay">
-        <div class="confirm-box">
-          <p>Are you sure you want to delete mixtape?</p>
-          <div class="confirm-buttons">
-            <button @click="deleteMixtape(showConfirmDelete); showConfirmDelete=null">Yes</button>
-            <button @click="showConfirmDelete = false">No</button>
-          </div>
-        </div>
-      </div>
-       <!-- Popup confirmation DeleteMixtape-->
-
-
-
-
-
-       <!--START OF POPUP FOR CREATE MIXTAPE-->
-      <div v-if="showPopup" class="popup-overlay">
-        <div class="popup-box">
-          <h2 v-if="createAction">Your Mixtape</h2>
-          <div class="upload-box" @click="triggerPhotoUpload">
-            <img v-if="photoUrl" :src="photoUrl" class="photo-preview" />
-            <span v-else>Add photo</span>
-            <input
-              type="file"
-              accept=".jpg, .jpeg, .png"
-              ref="photoInput"
-              @change="handlePhotoUpload"
-              hidden
-            />
-          </div>
-
-          <input
-            type="text"
-            placeholder="Mixtape Name"
-            class="mixtape-name"
-            v-model="mixtapeName"
-          />
-          <textarea
-            v-model="mixtapeDescription"
-            placeholder="Say something about your mixtape"
-            class="description-box"
-          ></textarea>
-
-          <div class="song-list-scroll">
-            <div
-              v-for="(song, index) in songs"
-              :key="index"
-              class="song-item song-item-flex"
-            >
-              <div class="song-details-flex">
-                <img
-                  v-if="song.artwork_url"
-                  :src="song.artwork_url"
-                  alt="Artwork"
-                  class="search-artwork"
-                  style="height: 40px;"
-                />
-                <div class="song-text">
-                  <div>{{ song.name }} - {{ song.artist }}</div>
-                </div>
-                <button
-                  v-if="song.preview_url"
-                  class="mini-audio-btn"
-                  @click="togglePlay(index)"
-                  :aria-label="
-                    playingIndex === index ? 'Pause preview' : 'Play preview'
-                  "
-                >
-                  <i
-                    :class="
-                      playingIndex === index
-                        ? 'fa-solid fa-pause'
-                        : 'fa-solid fa-play'
-                    "
-                  ></i>
-                </button>
-                <audio
-                  v-if="song.preview_url"
-                  ref="audioRefs"
-                  :src="song.preview_url"
-                  @ended="onAudioEnded"
-                  style="display: none"
-                ></audio>
-              </div>
-              <div class="song-actions-buttons">
-                <i
-                  class="fa-solid fa-trash delete-icon"
-                  @click="deleteSong(index)"
-                ></i>
-              </div>
+            <div class="song-text">
+              <div>{{ song.name }} - {{ song.artist }}</div>
             </div>
-          </div>
-
-          <div class="song-actions">
-            <div class="add-song" @click="openSongModal">
-              <i class="fa-solid fa-circle-plus"></i>
-              <span>Add Song</span>
-            </div>
-          </div>
-
-          <div class="popup-buttons">
-            <button @click="createMixtape">Save Mixtape</button>
-            <button @click="showConfirmCancel = true">Cancel</button>
-          </div>
-        </div>
-      </div>
-
-      <div v-if="showSongModal" class="modal-overlay">
-        <div class="song-popup-box">
-          <span class="exit-btn" @click="closeSongModal">×</span>
-          <h3>Song Search</h3>
-          <input
-            type="text"
-            v-model="songName"
-            placeholder="Song Name"
-            @input="searchSongs"
-          />
-          <input
-            type="text"
-            v-model="artistName"
-            placeholder="Artist Name"
-            @input="searchSongs"
-          />
-          <div v-if="searchResults.length > 0" class="search-results">
-            <div
-              v-for="(result, index) in searchResults"
-              :key="index"
-              class="search-item"
+            <button
+              v-if="song.preview_url"
+              class="mini-audio-btn"
+              @click="togglePlay(index)"
+              :aria-label="
+                playingIndex === index ? 'Pause preview' : 'Play preview'
+              "
             >
-              <img
-                v-if="result.artworkUrl100"
-                :src="result.artworkUrl100"
-                alt="Artwork"
-                class="search-artwork"
-              />
-              <div class="search-details" @click="addSongFromResult(result)">
-                <strong>{{ result.trackName }}</strong> -
-                {{ result.artistName }}
-              </div>
-              <button
-                v-if="result.previewUrl"
-                class="mini-audio-btn"
-                @click.stop="toggleSearchPlay(index)"
-                :aria-label="
-                  searchPlayingIndex === index
-                    ? 'Pause preview'
-                    : 'Play preview'
+              <i
+                :class="
+                  playingIndex === index
+                    ? 'fa-solid fa-pause'
+                    : 'fa-solid fa-play'
                 "
-              >
-                <i
-                  :class="
-                    searchPlayingIndex === index
-                      ? 'fa-solid fa-pause'
-                      : 'fa-solid fa-play'
-                  "
-                ></i>
-              </button>
-              <div v-else class="no-preview">No preview</div>
-              <audio
-                v-if="result.previewUrl"
-                ref="searchAudioRefs"
-                :src="result.previewUrl"
-                @ended="onSearchAudioEnded"
-                style="display: none"
-              ></audio>
-            </div>
+              ></i>
+            </button>
+            <audio
+              v-if="song.preview_url"
+              ref="audioRefs"
+              :src="song.preview_url"
+              @ended="onAudioEnded"
+              style="display: none"
+            ></audio>
           </div>
-          <div v-else class="search-empty">
-            <p>No results found yet. Try typing a song name or artist.</p>
+          <div class="song-actions-buttons">
+            <i
+              class="fa-solid fa-trash delete-icon"
+              @click="deleteSong(index)"
+            ></i>
           </div>
         </div>
       </div>
 
-      <div v-if="showConfirmCancel" class="modal-overlay">
-        <div class="confirm-box">
-          <p>Are you sure you want to close this?</p>
-          <div class="confirm-buttons">
-            <button @click="closePopup">Yes</button>
-            <button @click="showConfirmCancel = false">No</button>
-          </div>
+      <div class="song-actions">
+        <div class="add-song" @click="openSongModal">
+          <i class="fa-solid fa-circle-plus"></i>
+          <span>Add Song</span>
         </div>
       </div>
 
-      <!--END OF POPUP FOR CREATE MIXTAPE-->
-    <!-- Side nav hidden  -->
+      <div class="popup-buttons">
+        <button @click="createMixtape">Save Mixtape</button>
+        <button @click="showConfirmCancel = true">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div v-if="showSongModal" class="modal-overlay">
+    <div class="song-popup-box">
+      <span class="exit-btn" @click="closeSongModal">×</span>
+      <h3>Song Search</h3>
+      <input
+        type="text"
+        v-model="songName"
+        placeholder="Song Name"
+        @input="searchSongs"
+      />
+      <input
+        type="text"
+        v-model="artistName"
+        placeholder="Artist Name"
+        @input="searchSongs"
+      />
+      <div v-if="searchResults.length > 0" class="search-results">
+        <div
+          v-for="(result, index) in searchResults"
+          :key="index"
+          class="search-item"
+        >
+          <img
+            v-if="result.artworkUrl100"
+            :src="result.artworkUrl100"
+            alt="Artwork"
+            class="search-artwork"
+          />
+          <div class="search-details" @click="addSongFromResult(result)">
+            <strong>{{ result.trackName }}</strong> -
+            {{ result.artistName }}
+          </div>
+          <button
+            v-if="result.previewUrl"
+            class="mini-audio-btn"
+            @click.stop="toggleSearchPlay(index)"
+            :aria-label="
+              searchPlayingIndex === index ? 'Pause preview' : 'Play preview'
+            "
+          >
+            <i
+              :class="
+                searchPlayingIndex === index
+                  ? 'fa-solid fa-pause'
+                  : 'fa-solid fa-play'
+              "
+            ></i>
+          </button>
+          <div v-else class="no-preview">No preview</div>
+          <audio
+            v-if="result.previewUrl"
+            ref="searchAudioRefs"
+            :src="result.previewUrl"
+            @ended="onSearchAudioEnded"
+            style="display: none"
+          ></audio>
+        </div>
+      </div>
+      <div v-else class="search-empty">
+        <p>No results found yet. Try typing a song name or artist.</p>
+      </div>
+    </div>
+  </div>
+
+  <div v-if="showConfirmCancel" class="modal-overlay">
+    <div class="confirm-box">
+      <p>Are you sure you want to close this?</p>
+      <div class="confirm-buttons">
+        <button @click="closePopup">Yes</button>
+        <button @click="showConfirmCancel = false">No</button>
+      </div>
+    </div>
+  </div>
+
+  <!--END OF POPUP FOR CREATE MIXTAPE-->
+  <!-- Side nav hidden  -->
   <div class="side-nav-hidden" v-if="!show">
-    <div class="nav-section sidebar_burger" @click="show = !show" style="color:white;">
+    <div
+      class="nav-section sidebar_burger"
+      @click="show = !show"
+      style="color: white"
+    >
       <i class="fa-solid fa-bars fa-2x"></i>
     </div>
   </div>
   <!-- Side nav hidden  -->
   <div class="side-nav" v-if="show">
-    <div class="nav-section sidebar_burger" @click="show = !show"  style="color:#322848; border:0;">
+    <div
+      class="nav-section sidebar_burger"
+      @click="show = !show"
+      style="color: #322848; border: 0"
+    >
       <i class="fa-solid fa-bars fa-2x"></i>
     </div>
     <div class="nav-section">
@@ -276,12 +286,9 @@
             togglePopup();
             createAction = !createAction;
           "
-           @click.stop="toggleMixtapeMenu(null)"
-           
+          @click.stop="toggleMixtapeMenu(null)"
         ></i>
       </div>
-
-
 
       <hr class="separator" />
 
@@ -318,7 +325,7 @@
       </div>
 
       <div class="mixtape-list">
-<!-- Was mixtape overlay -->
+        <!-- Was mixtape overlay -->
 
         <div
           class="mixtape-item"
@@ -333,20 +340,24 @@
             alt="Mixtape Image"
             class="mixtape-img"
           />
-          <span>{{ mix.name.slice(0, 8) }}{{ mix.name.length > 8 ? '.' : '' }}</span>
-          <!-- Three-dot menu -->
-          <div
-            
-            class="mixtape-menu-wrapper"
-            @click.stop
+          <span
+            >{{ mix.name.slice(0, 8)
+            }}{{ mix.name.length > 8 ? "." : "" }}</span
           >
+          <!-- Three-dot menu -->
+          <div class="mixtape-menu-wrapper" @click.stop>
             <i
               class="fa-solid fa-ellipsis-vertical mixtape-menu-icon"
               @click.stop="toggleMixtapeMenu(index)"
             ></i>
             <div v-if="openMenuIndex === index" class="mixtape-menu-dropdown">
               <div @click="editMixtape(index)">Edit</div>
-              <div @click="showConfirmDelete = index" v-if="mix.id !== firstMixtapeId">Delete</div>
+              <div
+                @click="showConfirmDelete = index"
+                v-if="mix.id !== firstMixtapeId"
+              >
+                Delete
+              </div>
               <!-- DITONATALAGA -->
             </div>
           </div>
@@ -428,7 +439,7 @@ const closePopup = () => {
   photoUrl.value = null;
   photoPath.value = null;
   editingMixtapeId.value = null;
-  showConfirmDelete = null;
+  showConfirmDelete.value = false;
 };
 
 function triggerPhotoUpload() {
@@ -464,7 +475,8 @@ async function handlePhotoUpload(event) {
       photoUrl.value = getFullPhotoUrl(response.data.imageUrl);
     } catch (err) {
       alert("Failed to upload image.");
-      photoUrl.value = "/src/assets/noimage.jpg";
+      photoUrl.value =
+        "https://res.cloudinary.com/dmlzg1ouv/image/upload/v1749412320/noimage_jvys4b.jpg";
       photoPath.value = null;
     }
   }
@@ -492,7 +504,9 @@ const createMixtape = async () => {
     const token = localStorage.getItem("token");
     if (editingMixtapeId.value) {
       const response = await axios.put(
-        `${import.meta.env.VITE_API_URL}/api/mixtapes/${editingMixtapeId.value}`,
+        `${import.meta.env.VITE_API_URL}/api/mixtapes/${
+          editingMixtapeId.value
+        }`,
         {
           name: mixtapeName.value,
           description: mixtapeDescription.value,
@@ -505,7 +519,7 @@ const createMixtape = async () => {
         }
       );
 
-              console.log(response.data);
+      console.log(response.data);
       // Always update preview with backend path after save
       if (response.data.photoUrl) {
         photoPath.value = response.data.photoUrl;
@@ -637,13 +651,14 @@ const editMixtape = (index) => {
     photoUrl.value = getFullPhotoUrl(mix.cover);
     photoPath.value = mix.cover;
   } else {
-    photoUrl.value = "/src/assets/noimage.jpg";
+    photoUrl.value =
+      "https://res.cloudinary.com/dmlzg1ouv/image/upload/v1749412320/noimage_jvys4b.jpg";
     photoPath.value = null;
   }
   editingMixtapeId.value = mix.id;
   showPopup.value = true;
   openMenuIndex.value = null;
-}
+};
 
 const deleteSong = (index) => {
   songs.value.splice(index, 1);
@@ -728,10 +743,14 @@ function sortMixtapes() {
       mixtapes.value.sort((a, b) => b.name.localeCompare(a.name));
       break;
     case "newest":
-      mixtapes.value.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+      mixtapes.value.sort(
+        (a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0)
+      );
       break;
     case "oldest":
-      mixtapes.value.sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0));
+      mixtapes.value.sort(
+        (a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0)
+      );
       break;
   }
 }
@@ -855,10 +874,14 @@ async function fetchUserMixtapes() {
         name: song.name ?? song.song_name ?? "",
         artist: song.artist ?? song.artist_name ?? "",
         preview_url: song.preview_url ?? song.url ?? "",
-        artwork_url: song.artwork_url || song.artworkUrl100 || song.artwork || null,
+        artwork_url:
+          song.artwork_url || song.artworkUrl100 || song.artwork || null,
       })),
     }));
-    console.log('Mapped songs:', mixtapes.value.flatMap(m => m.songs));
+    console.log(
+      "Mapped songs:",
+      mixtapes.value.flatMap((m) => m.songs)
+    );
     sortMixtapes(); // <-- sort after fetching
   } catch (error) {
     console.error("Failed to fetch mixtapes:", error);
@@ -867,10 +890,12 @@ async function fetchUserMixtapes() {
 }
 
 function getFullPhotoUrl(photoUrl) {
-  if (!photoUrl || photoUrl === "/src/assets/noimage.jpg") return "/src/assets/noimage.jpg";
+  if (!photoUrl)
+    return "https://res.cloudinary.com/dmlzg1ouv/image/upload/v1749412320/noimage_jvys4b.jpg";
+  // return "https://res.cloudinary.com/dmlzg1ouv/image/upload/v1749412320/noimage_jvys4b.jpg";
   if (photoUrl.startsWith("http")) return photoUrl;
   const baseUrl = import.meta.env.VITE_API_URL;
-  return `${baseUrl}/${photoUrl.replace(/^\/+/, '')}`;
+  return `${baseUrl}/${photoUrl.replace(/^\/+/, "")}`;
 }
 
 const openMenuIndex = ref(null);
@@ -888,12 +913,14 @@ async function deleteMixtape(index) {
   // if (!confirm("Are you sure you want to delete this mixtape?")) return;
   try {
     const token = localStorage.getItem("token");
-    await axios.delete(`${import.meta.env.VITE_API_URL}/api/mixtapes/${mix.id}`, {
-      headers:
-        {
+    await axios.delete(
+      `${import.meta.env.VITE_API_URL}/api/mixtapes/${mix.id}`,
+      {
+        headers: {
           Authorization: `Bearer ${token}`,
         },
-    });
+      }
+    );
     await fetchUserMixtapes();
     openMenuIndex.value = null;
   } catch (err) {
@@ -930,7 +957,7 @@ onBeforeUnmount(() => {
 const firstMixtapeId = computed(() => {
   if (!mixtapes.value.length) return null;
   // Find the mixtape with the lowest id (first created)
-  return Math.min(...mixtapes.value.map(m => m.id));
+  return Math.min(...mixtapes.value.map((m) => m.id));
 });
 </script>
 
@@ -959,7 +986,7 @@ body {
   left: 0;
   height: calc(100vh - 60px);
   width: 270px;
-   background-color: white;
+  background-color: white;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2); /* stronger shadow for depth */
   backdrop-filter: blur(12px) brightness(1.05);
   -webkit-backdrop-filter: blur(12px) brightness(1.05);
@@ -991,18 +1018,18 @@ body {
 .nav-section,
 .mixtape-section {
   /* background-color: #1f0d3e; */
-   background: rgba(255, 255, 255, 0.55);
-   border: 1px solid #322848;
-   border-radius: 10px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid #322848;
+  border-radius: 10px;
   padding: 2rem;
-color:#322848;
+  color: #322848;
 }
 
 .nav-item {
   display: flex;
   align-items: center;
   gap: 1.5rem;
-  color:#322848;
+  color: #322848;
   margin-bottom: 1.5rem;
   text-decoration: none;
   transition: color 0.3s, font-weight 0.3s;
@@ -1067,7 +1094,14 @@ color:#322848;
 
 .popup-box {
   /* background-color: #080d2a; */
-    background: linear-gradient(120deg, #e3b8ff 0%, #dbb4d7 25%, #c697bd 50%, #8a6bb8 75%, #75629e 100%);
+  background: linear-gradient(
+    120deg,
+    #e3b8ff 0%,
+    #dbb4d7 25%,
+    #c697bd 50%,
+    #8a6bb8 75%,
+    #75629e 100%
+  );
   padding: 2rem;
   border-radius: 1rem;
   width: 600px;
@@ -1107,13 +1141,13 @@ color:#322848;
   background: rgba(255, 255, 255, 0.495);
   text-align: center;
 }
-.mixtape-name:focus{
+.mixtape-name:focus {
   outline: none;
   background: #3228485a;
   color: white;
   box-shadow: 0 8px 12px rgba(31, 13, 62, 0.08);
 }
-.description-box:focus{
+.description-box:focus {
   outline: none;
   background: #3228485a;
   color: white;
@@ -1209,18 +1243,14 @@ color:#322848;
   border-radius: 0.3rem;
   border: none;
   background: rgba(255, 255, 255, 0.495);
-  color:#322848;
+  color: #322848;
 }
 .song-popup-box input:focus {
-outline: none;
+  outline: none;
   background: #3228485a;
   color: white;
   box-shadow: 0 8px 12px rgba(31, 13, 62, 0.08);
 }
-
-
-
-
 
 .exit-btn {
   position: absolute;
@@ -1315,7 +1345,7 @@ outline: none;
   position: absolute;
   left: 10px;
   z-index: 1;
-  color:#322848;
+  color: #322848;
 }
 
 .input-with-mic .mixtape-input {
@@ -1476,7 +1506,7 @@ outline: none;
 }
 
 .mixtape-detail-box {
-  background: rgba(255, 255, 255, 0.65); 
+  background: rgba(255, 255, 255, 0.65);
   box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.25);
   backdrop-filter: blur(12px) saturate(180%);
   -webkit-backdrop-filter: blur(12px) saturate(180%);
@@ -1513,10 +1543,10 @@ outline: none;
   gap: 10px;
 }
 
-.song-detail-list{
+.song-detail-list {
   margin-top: 1rem;
-  overflow-y: auto; 
-  max-height: 180px; 
+  overflow-y: auto;
+  max-height: 180px;
   flex-grow: 1;
   text-align: left;
   border: 1px solid #322848;
@@ -1606,9 +1636,9 @@ outline: none;
 .mixtape-menu-dropdown div:hover {
   background: #ffffff;
   color: #1f0d3e;
-  border:1px solid #322848;
+  border: 1px solid #322848;
   border-radius: 6px;
-  font-weight:bold;
+  font-weight: bold;
 }
 
 .mixtape-menu-dropdown .disabled {
@@ -1632,7 +1662,6 @@ outline: none;
   color: #fff;
   font-size: 11pt;
   width: 100%;
-  
 }
 .sidebar_burger {
   text-align: right;
@@ -1683,5 +1712,4 @@ outline: none;
     font-size: 0.8rem; /* Smaller input font size */
   }
 }
-
 </style>

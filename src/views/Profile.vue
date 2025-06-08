@@ -1,181 +1,217 @@
 <template>
   <!-- Create Mixtape Popup -->
-    <div v-if="showPopup" class="popup-overlay" @click="closePopup">
-      <div class="popup-box" @click.stop>
-        <h2>Create New Mixtape</h2>
-        <div class="upload-box" @click="triggerPhotoUpload">
-          <input
-            type="file"
-            ref="photoInput"
-            @change="handlePhotoUpload"
-            accept="image/*"
-            hidden
-          />
-          <img v-if="photoUrl" :src="photoUrl" class="photo-preview" />
-          <span v-else>Add photo</span>
-        </div>
+  <div v-if="showPopup" class="popup-overlay" @click="closePopup">
+    <div class="popup-box" @click.stop>
+      <h2>Create New Mixtape</h2>
+      <div class="upload-box" @click="triggerPhotoUpload">
         <input
-          v-model="mixtapeName"
-          placeholder="Mixtape Name"
-          class="mixtape-name"
+          type="file"
+          ref="photoInput"
+          @change="handlePhotoUpload"
+          accept="image/*"
+          hidden
         />
-        <textarea
-          v-model="mixtapeDescription"
-          placeholder="Say something about your mixtape"
-          class="description-box"
-        ></textarea>
-        <div class="song-list-scroll">
-  <div v-for="(song, index) in songs" :key="index" class="song-item-flex">
-    <!-- Add the artwork display -->
-    <div style="display: flex; align-items: center; gap: 12px; color: #322848">
-      <img
-        v-if="song.artwork_url"
-        :src="song.artwork_url"
-        alt="Song artwork"
-        style="width: 40px; height: 40px; border-radius: 6px;"
+        <img v-if="photoUrl" :src="photoUrl" class="photo-preview" />
+        <span v-else>Add photo</span>
+      </div>
+      <input
+        v-model="mixtapeName"
+        placeholder="Mixtape Name"
+        class="mixtape-name"
       />
-      <span>{{ song.name }} - {{ song.artist }}</span>
-    </div>
-    <div class="song-actions-buttons">
-      <i class="fa-solid fa-trash" @click="deleteSong(index)"></i>
+      <textarea
+        v-model="mixtapeDescription"
+        placeholder="Say something about your mixtape"
+        class="description-box"
+      ></textarea>
+      <div class="song-list-scroll">
+        <div v-for="(song, index) in songs" :key="index" class="song-item-flex">
+          <!-- Add the artwork display -->
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              color: #322848;
+            "
+          >
+            <img
+              v-if="song.artwork_url"
+              :src="song.artwork_url"
+              alt="Song artwork"
+              style="width: 40px; height: 40px; border-radius: 6px"
+            />
+            <span>{{ song.name }} - {{ song.artist }}</span>
+          </div>
+          <div class="song-actions-buttons">
+            <i class="fa-solid fa-trash" @click="deleteSong(index)"></i>
+          </div>
+        </div>
+      </div>
+      <button class="add-song-btn" @click="showSongModal = true">
+        <i class="fa-solid fa-plus"></i> Add Song
+      </button>
+      <div class="popup-buttons">
+        <!-- Dito -->
+        <button
+          @click="
+            createMixtape();
+            showConfirmCreateSuccess = true;
+          "
+        >
+          Create Mixtape
+        </button>
+        <button @click="closePopup">Cancel</button>
+      </div>
     </div>
   </div>
-</div>
-        <button class="add-song-btn" @click="showSongModal = true">
-          <i class="fa-solid fa-plus"></i> Add Song
+
+  <!-- Song Modal -->
+  <div v-if="showSongModal" class="modal-overlay" @click="closeSongModal">
+    <div class="song-popup-box" @click.stop>
+      <div class="exit-btn" @click="closeSongModal">&times;</div>
+      <h3>Add Song</h3>
+      <input
+        v-model="songSearchQuery"
+        placeholder="Search for a song..."
+        @input="searchSongs"
+      />
+      <div v-if="songSearchResults.length > 0" class="song-search-results">
+        <div
+          v-for="song in songSearchResults"
+          :key="song.name + song.artist"
+          class="song-search-item"
+          @click="selectSongFromSearch(song)"
+        >
+          <img
+            v-if="song.artwork_url"
+            :src="song.artwork_url"
+            alt="Song artwork"
+            class="song-search-artwork"
+          />
+          <div class="song-search-info">
+            <div class="song-search-name">{{ song.name }}</div>
+            <div class="song-search-artist">{{ song.artist }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Song Modal -->
+  <div
+    v-if="showSongModalEdit"
+    class="modal-overlay"
+    @click="closeEditSongModal"
+  >
+    <div class="song-popup-box" @click.stop>
+      <div class="exit-btn" @click="closeEditSongModal">&times;</div>
+      <h3>Add Song to Mixtape</h3>
+      <input
+        v-model="songSearchQuery"
+        placeholder="Search for a song..."
+        @input="searchSongs"
+      />
+      <div v-if="songSearchResults.length > 0" class="song-search-results">
+        <div
+          v-for="song in songSearchResults"
+          :key="song.name + song.artist"
+          class="song-search-item"
+          @click="addSongToEditableMixtape(song)"
+        >
+          <img
+            v-if="song.artwork_url"
+            :src="song.artwork_url"
+            alt="Song artwork"
+            class="song-search-artwork"
+          />
+          <div class="song-search-info">
+            <div class="song-search-name">{{ song.name }}</div>
+            <div class="song-search-artist">{{ song.artist }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- (End)Create Mixtape Popup -->
+
+  <!-- Popup Create Success-->
+  <div v-if="showConfirmCreateSuccess" class="modal-overlay">
+    <div class="confirm-box">
+      <p>Mixtape Created successfully!</p>
+      <div class="confirm-buttons">
+        <button
+          @click="
+            showConfirmCreateSuccess = null;
+            closePopup();
+          "
+        >
+          Close
         </button>
-        <div class="popup-buttons">
-          <!-- Dito -->
-          <button @click="createMixtape(); showConfirmCreateSuccess = true">Create Mixtape</button>
-          <button @click="closePopup">Cancel</button>
-        </div>
       </div>
     </div>
-
-    <!-- Song Modal -->
-    <div v-if="showSongModal" class="modal-overlay" @click="closeSongModal">
-      <div class="song-popup-box" @click.stop>
-        <div class="exit-btn" @click="closeSongModal">&times;</div>
-        <h3>Add Song</h3>
-        <input
-          v-model="songSearchQuery"
-          placeholder="Search for a song..."
-          @input="searchSongs"
-        />
-        <div v-if="songSearchResults.length > 0" class="song-search-results">
-          <div
-            v-for="song in songSearchResults"
-            :key="song.name + song.artist"
-            class="song-search-item"
-            @click="selectSongFromSearch(song)"
-          >
-            <img
-              v-if="song.artwork_url"
-              :src="song.artwork_url"
-              alt="Song artwork"
-              class="song-search-artwork"
-            />
-            <div class="song-search-info">
-              <div class="song-search-name">{{ song.name }}</div>
-              <div class="song-search-artist">{{ song.artist }}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Edit Song Modal -->
-    <div v-if="showSongModalEdit" class="modal-overlay" @click="closeEditSongModal">
-      <div class="song-popup-box" @click.stop>
-        <div class="exit-btn" @click="closeEditSongModal">&times;</div>
-        <h3>Add Song to Mixtape</h3>
-        <input
-          v-model="songSearchQuery"
-          placeholder="Search for a song..."
-          @input="searchSongs"
-        />
-        <div v-if="songSearchResults.length > 0" class="song-search-results">
-          <div
-            v-for="song in songSearchResults"
-            :key="song.name + song.artist"
-            class="song-search-item"
-            @click="addSongToEditableMixtape(song)"
-          >
-            <img
-              v-if="song.artwork_url"
-              :src="song.artwork_url"
-              alt="Song artwork"
-              class="song-search-artwork"
-            />
-            <div class="song-search-info">
-              <div class="song-search-name">{{ song.name }}</div>
-              <div class="song-search-artist">{{ song.artist }}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- (End)Create Mixtape Popup -->
-
+  </div>
   <!-- Popup Create Success-->
-      <div v-if="showConfirmCreateSuccess" class="modal-overlay">
-        <div class="confirm-box">
-          <p>Mixtape Created successfully!</p>
-          <div class="confirm-buttons">
-            <button @click="showConfirmCreateSuccess=null;closePopup();">Close</button>
-          </div>
-        </div>
-      </div>
-  <!-- Popup Create Success-->
-
 
   <!-- Popup Edit Mixtape success-->
-      <div v-if="showConfirmEditSuccess" class="modal-overlay">
-        <div class="confirm-box">
-          <p>Mixtape Edited successfully!</p>
-          <div class="confirm-buttons">
-            <button @click="showConfirmEditSuccess=null">Close</button>
-          </div>
-        </div>
+  <div v-if="showConfirmEditSuccess" class="modal-overlay">
+    <div class="confirm-box">
+      <p>Mixtape Edited successfully!</p>
+      <div class="confirm-buttons">
+        <button @click="showConfirmEditSuccess = null">Close</button>
       </div>
- <!-- Popup Edit Mixtape success-->
-
+    </div>
+  </div>
+  <!-- Popup Edit Mixtape success-->
 
   <!-- Popup delete poll-->
-      <div v-if="showConfirmDeletePoll" class="modal-overlay">
-        <div class="confirm-box">
-          <p>Are you sure you want to delete this poll?</p>
-          <div class="confirm-buttons">
-            <button @click="deletePoll(showConfirmDeletePoll); showConfirmDeletePoll=null">Yes</button>
-            <button @click="showConfirmDeletePoll = null">No</button>
-          </div>
-        </div>
+  <div v-if="showConfirmDeletePoll" class="modal-overlay">
+    <div class="confirm-box">
+      <p>Are you sure you want to delete this poll?</p>
+      <div class="confirm-buttons">
+        <button
+          @click="
+            deletePoll(showConfirmDeletePoll);
+            showConfirmDeletePoll = null;
+          "
+        >
+          Yes
+        </button>
+        <button @click="showConfirmDeletePoll = null">No</button>
       </div>
-      <!-- Popup delete poll-->
+    </div>
+  </div>
+  <!-- Popup delete poll-->
 
-   <!-- Popup delete mixtape-->
-      <div v-if="showConfirmDeleteMixtape" class="modal-overlay">
-        <div class="confirm-box">
-          <p>Are you sure you want to delete this mixtape?</p>
-          <div class="confirm-buttons">
-            <button @click="deleteMixtape(showConfirmDeleteMixtape); showConfirmDeleteMixtape=null">Yes</button>
-            <button @click="showConfirmDeleteMixtape = null">No</button>
-          </div>
-        </div>
+  <!-- Popup delete mixtape-->
+  <div v-if="showConfirmDeleteMixtape" class="modal-overlay">
+    <div class="confirm-box">
+      <p>Are you sure you want to delete this mixtape?</p>
+      <div class="confirm-buttons">
+        <button
+          @click="
+            deleteMixtape(showConfirmDeleteMixtape);
+            showConfirmDeleteMixtape = null;
+          "
+        >
+          Yes
+        </button>
+        <button @click="showConfirmDeleteMixtape = null">No</button>
       </div>
-      <!-- Popup delete mixtape-->
+    </div>
+  </div>
+  <!-- Popup delete mixtape-->
 
-
-        <!-- Popup profile updated-->
-      <div v-if="showConfirmProfileUpdated" class="modal-overlay">
-        <div class="confirm-box">
-          <p>Profile Updated!</p>
-          <div class="confirm-buttons">
-            <button @click="showConfirmProfileUpdated=null">Confirm</button>
-          </div>
-        </div>
+  <!-- Popup profile updated-->
+  <div v-if="showConfirmProfileUpdated" class="modal-overlay">
+    <div class="confirm-box">
+      <p>Profile Updated!</p>
+      <div class="confirm-buttons">
+        <button @click="showConfirmProfileUpdated = null">Confirm</button>
       </div>
-      <!-- Popup profile updated-->
+    </div>
+  </div>
+  <!-- Popup profile updated-->
 
   <NavLayout>
     <div class="animated-background"></div>
@@ -295,13 +331,23 @@
       <div class="tabs">
         <button
           class="tabs-button"
-          @click="() => { myMixtapesTab = true; myPollTabs = false; }"
+          @click="
+            () => {
+              myMixtapesTab = true;
+              myPollTabs = false;
+            }
+          "
         >
           My Mixtapes
         </button>
         <button
           class="tabs-button"
-          @click="() => { myMixtapesTab = false; myPollTabs = true; }"
+          @click="
+            () => {
+              myMixtapesTab = false;
+              myPollTabs = true;
+            }
+          "
         >
           My Polls
         </button>
@@ -354,195 +400,190 @@
           </div>
           <!-- MIXTAPES HEADER -->
 
-       <!-- MIXTAPES LIST -->
-        <div
-          class="mixtapes-list"
-          :class="{ list: isListView, grid: !isListView }"
-        >
+          <!-- MIXTAPES LIST -->
           <div
-            v-for="mixtape in filteredMixtapes"
-            :key="mixtape.id"
-            class="mixtape-item editable-mixtape"
+            class="mixtapes-list"
+            :class="{ list: isListView, grid: !isListView }"
           >
-          
-
-<div
-  v-if="editingMixtapeId !== mixtape.id"
-  class="mixtape-content-wrapper"
-  style="cursor: pointer;"
-  @click="selectedMixtape = mixtape"
->
-  <img
-    v-if="mixtape.cover"
-    :src="mixtape.cover"
-    alt="Mixtape Cover"
-    class="mixtape-cover"
-  />
-  <span v-else class="no-cover">No cover</span>
-  <div class="mixtape-info">
-    <h3 class="mixtape-title">{{ mixtape.name }}</h3>
-  </div>
-  <div class="mixtape-actions-top-right">
-    <button 
-      @click.stop="startEditMixtape(mixtape)" 
-      class="edit-btn"
-    >
-      Edit
-    </button>
-    <button
-      @click.stop="showConfirmDeleteMixtape=mixtape"
-      :disabled="mixtape.id === firstMixtapeId"
-      v-if="mixtape.id !== firstMixtapeId"
-    >
-      Delete
-    </button>
-  </div>
-</div>
-            <div v-else class="mixtape-edit-form">
-              <div class="upload-box" @click="triggerEditCoverUpload">
-                <input
-                  type="file"
-                  ref="editCoverInput"
-                  @change="handleEditCoverUpload"
-                  accept="image/*"
-                  hidden
-                />
+            <div
+              v-for="mixtape in filteredMixtapes"
+              :key="mixtape.id"
+              class="mixtape-item editable-mixtape"
+            >
+              <div
+                v-if="editingMixtapeId !== mixtape.id"
+                class="mixtape-content-wrapper"
+                style="cursor: pointer"
+                @click="selectedMixtape = mixtape"
+              >
                 <img
-                  v-if="editableMixtape.coverPreview || editableMixtape.cover"
-                  :src="editableMixtape.coverPreview || getFullPhotoUrl(editableMixtape.cover)"
-                  class="photo-preview"
+                  v-if="mixtape.cover"
+                  :src="mixtape.cover"
                   alt="Mixtape Cover"
+                  class="mixtape-cover"
                 />
-                <span v-else>Click to upload cover</span>
-              </div>
-              <input
-                v-model="editableMixtape.name"
-                placeholder="Mixtape Name"
-                class="mixtape-desc"
-              />
-              <textarea
-                v-model="editableMixtape.description"
-                placeholder="Description"
-                class="mixtape-desc"
-              ></textarea>
-              <div class="edit-songs-section">
-                <h4>Songs</h4>
-                <br />
-                <div
-                  v-for="(song, idx) in editableMixtape.songs"
-                  :key="idx"
-                  class="song-item song-item-flex"
-                >
-                  <img
-                    v-if="song.artwork_url"
-                    :src="song.artwork_url"
-                    alt="Artwork"
-                    style="
-                      width: 40px;
-                      height: 40px;
-                      border-radius: 6px;
-                      margin-right: 0.5rem;
-                    "
-                  />
-                  <div style="flex: 1">
-                    <span>{{ song.name }} - {{ song.artist }}</span>
-                  </div>
-                  <button
-                    v-if="song.preview_url"
-                    class="mini-audio-btn"
-                    @click="playPreview(song.preview_url, idx)"
-                    :aria-label="
-                      playingIndex === idx ? 'Pause preview' : 'Play preview'
-                    "
-                    style="margin-left: 0.5rem"
-                  >
-                    <i
-                      :class="
-                        playingIndex === idx
-                          ? 'fa-solid fa-pause'
-                          : 'fa-solid fa-play'
-                      "
-                    ></i>
-                  </button>
-                  <div class="song-actions-buttons">
-                    <i
-                      class="fa-solid fa-trash delete-icon"
-                      @click="removeSongFromEditable(idx)"
-                    ></i>
-                  </div>
+                <span v-else class="no-cover">No cover</span>
+                <div class="mixtape-info">
+                  <h3 class="mixtape-title">{{ mixtape.name }}</h3>
                 </div>
-                <button
-                  class="add-song-btn"
-                  @click="showSongModalEdit = true"
-                  style="margin-top: 1rem"
-                >
-                  <i class="fa-solid fa-circle-plus"></i> Add Song
-                </button>
+                <div class="mixtape-actions-top-right">
+                  <button
+                    @click.stop="startEditMixtape(mixtape)"
+                    class="edit-btn"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    @click.stop="showConfirmDeleteMixtape = mixtape"
+                    :disabled="mixtape.id === firstMixtapeId"
+                    v-if="mixtape.id !== firstMixtapeId"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
-              <button
-                @click="showConfirmEditSuccess=true;saveEditMixtape(editableMixtape)"
-                style="
-                  background: #322848;
-                  color: #fff;
-                  border-radius: 6px;
-                "
-              >
-                Save
-              </button>
-              &nbsp;&nbsp;&nbsp;
-              <button
-                @click="cancelEditMixtape"
-                style="
-                  background: #322848;
-                  color: #fff;
-                  border-radius: 6px;
-                "
-              >
-                Cancel
-              </button>
-            </div>
-            <transition name="fade">
-              <div v-if="expandedMixtapeId === mixtape.id" class="expanded-songs">
-                <ol
-                  v-if="mixtape.songs && mixtape.songs.length"
-                  class="song-list"
-                >
-                  <li
-                    v-for="(song, index) in mixtape.songs"
-                    :key="index"
-                    class="expanded-song-row"
+              <div v-else class="mixtape-edit-form">
+                <div class="upload-box" @click="triggerEditCoverUpload">
+                  <input
+                    type="file"
+                    ref="editCoverInput"
+                    @change="handleEditCoverUpload"
+                    accept="image/*"
+                    hidden
+                  />
+                  <img
+                    v-if="editableMixtape.coverPreview || editableMixtape.cover"
+                    :src="
+                      editableMixtape.coverPreview ||
+                      getFullPhotoUrl(editableMixtape.cover)
+                    "
+                    class="photo-preview"
+                    alt="Mixtape Cover"
+                  />
+                  <span v-else>Click to upload cover</span>
+                </div>
+                <input
+                  v-model="editableMixtape.name"
+                  placeholder="Mixtape Name"
+                  class="mixtape-desc"
+                />
+                <textarea
+                  v-model="editableMixtape.description"
+                  placeholder="Description"
+                  class="mixtape-desc"
+                ></textarea>
+                <div class="edit-songs-section">
+                  <h4>Songs</h4>
+                  <br />
+                  <div
+                    v-for="(song, idx) in editableMixtape.songs"
+                    :key="idx"
+                    class="song-item song-item-flex"
                   >
                     <img
                       v-if="song.artwork_url"
                       :src="song.artwork_url"
-                      class="song-artwork"
-                    />
-                    <span class="song-title">{{ song.name }}</span>
-                    <span class="artist-name">by {{ song.artist }}</span>
-                    <audio
-                      v-if="song.preview_url"
-                      :src="song.preview_url"
-                      controls
+                      alt="Artwork"
                       style="
-                        vertical-align: middle;
-                        margin-left: 10px;
-                        height: 28px;
+                        width: 40px;
+                        height: 40px;
+                        border-radius: 6px;
+                        margin-right: 0.5rem;
                       "
                     />
-                  </li>
-                </ol>
-                <p v-else class="song-list">(No songs listed)</p>
+                    <div style="flex: 1">
+                      <span>{{ song.name }} - {{ song.artist }}</span>
+                    </div>
+                    <button
+                      v-if="song.preview_url"
+                      class="mini-audio-btn"
+                      @click="playPreview(song.preview_url, idx)"
+                      :aria-label="
+                        playingIndex === idx ? 'Pause preview' : 'Play preview'
+                      "
+                      style="margin-left: 0.5rem"
+                    >
+                      <i
+                        :class="
+                          playingIndex === idx
+                            ? 'fa-solid fa-pause'
+                            : 'fa-solid fa-play'
+                        "
+                      ></i>
+                    </button>
+                    <div class="song-actions-buttons">
+                      <i
+                        class="fa-solid fa-trash delete-icon"
+                        @click="removeSongFromEditable(idx)"
+                      ></i>
+                    </div>
+                  </div>
+                  <button
+                    class="add-song-btn"
+                    @click="showSongModalEdit = true"
+                    style="margin-top: 1rem"
+                  >
+                    <i class="fa-solid fa-circle-plus"></i> Add Song
+                  </button>
+                </div>
+                <button
+                  @click="
+                    showConfirmEditSuccess = true;
+                    saveEditMixtape(editableMixtape);
+                  "
+                  style="background: #322848; color: #fff; border-radius: 6px"
+                >
+                  Save
+                </button>
+                &nbsp;&nbsp;&nbsp;
+                <button
+                  @click="cancelEditMixtape"
+                  style="background: #322848; color: #fff; border-radius: 6px"
+                >
+                  Cancel
+                </button>
               </div>
-            </transition>
+              <transition name="fade">
+                <div
+                  v-if="expandedMixtapeId === mixtape.id"
+                  class="expanded-songs"
+                >
+                  <ol
+                    v-if="mixtape.songs && mixtape.songs.length"
+                    class="song-list"
+                  >
+                    <li
+                      v-for="(song, index) in mixtape.songs"
+                      :key="index"
+                      class="expanded-song-row"
+                    >
+                      <img
+                        v-if="song.artwork_url"
+                        :src="song.artwork_url"
+                        class="song-artwork"
+                      />
+                      <span class="song-title">{{ song.name }}</span>
+                      <span class="artist-name">by {{ song.artist }}</span>
+                      <audio
+                        v-if="song.preview_url"
+                        :src="song.preview_url"
+                        controls
+                        style="
+                          vertical-align: middle;
+                          margin-left: 10px;
+                          height: 28px;
+                        "
+                      />
+                    </li>
+                  </ol>
+                  <p v-else class="song-list">(No songs listed)</p>
+                </div>
+              </transition>
+            </div>
           </div>
         </div>
+        <!-- MIXTAPES LIST -->
       </div>
-      <!-- MIXTAPES LIST -->
-
-
-        </div>
-
- 
 
       <!-- Start of POLL -->
       <div v-if="myPollTabs" class="poll-area">
@@ -558,28 +599,59 @@
           </div>
           <div v-for="poll in myPolls" :key="poll.id" class="poll-container">
             <div class="poll-content">
-              <div style="display: flex; justify-content: space-between; align-items: start;">
-                <div class="postedtime" style="text-align: left; margin-top: 3px;">
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: start;
+                "
+              >
+                <div
+                  class="postedtime"
+                  style="text-align: left; margin-top: 3px"
+                >
                   <span>{{ poll.question }}</span>
                 </div>
-                <button 
-                  @click="showConfirmDeletePoll=poll.id" 
+                <button
+                  @click="showConfirmDeletePoll = poll.id"
                   class="delete-poll-btn"
                   title="Delete poll"
                 >
                   <i class="fa-solid fa-xmark"></i>
                 </button>
               </div>
-              <div class="poll-created-at" style="text-align: left; font-size: 11px; color: white; margin-top: 2px; margin-bottom: 20px;">
-                <span>Posted: {{ new Date(poll.created_at).toLocaleString() }}</span>
+              <div
+                class="poll-created-at"
+                style="
+                  text-align: left;
+                  font-size: 11px;
+                  color: white;
+                  margin-top: 2px;
+                  margin-bottom: 20px;
+                "
+              >
+                <span
+                  >Posted:
+                  {{ new Date(poll.created_at).toLocaleString() }}</span
+                >
               </div>
-              <div class="poll-options-container" v-if="poll.options && poll.options.length">
-                <div class="poll-option" v-for="option in poll.options" :key="option.id">
+              <div
+                class="poll-options-container"
+                v-if="poll.options && poll.options.length"
+              >
+                <div
+                  class="poll-option"
+                  v-for="option in poll.options"
+                  :key="option.id"
+                >
                   <span>{{ option.text }}</span>
                   <span>{{ option.votes }} votes</span>
                 </div>
               </div>
-              <div class="poll-length" :class="{ 'finished': isPollFinished(poll) }">
+              <div
+                class="poll-length"
+                :class="{ finished: isPollFinished(poll) }"
+              >
                 {{ getPollTimeRemaining(poll) }}
               </div>
             </div>
@@ -592,46 +664,58 @@
 
     <!-- Mixtape Detail Popup -->
     <!-- Find this section in your template and replace it -->
-<div v-if="selectedMixtape" class="mixtape-detail-overlay" @click="selectedMixtape = null">
-  <div class="mixtape-detail-box" @click.stop>
-    <div class="close-detail" @click="selectedMixtape = null">&times;</div>
-    <img 
-      :src="selectedMixtape.cover || '/src/assets/noimage.jpg'" 
-      :alt="selectedMixtape.name" 
-      class="detail-img"
-    />
-    <h2>{{ selectedMixtape.name }}</h2>
-    <p v-if="selectedMixtape.description">{{ selectedMixtape.description }}</p>
-    <div class="song-list">
-      <div 
-        v-for="(song, index) in selectedMixtape.songs" 
-        :key="index"
-        class="song-details-flex"
-      >
+    <div
+      v-if="selectedMixtape"
+      class="mixtape-detail-overlay"
+      @click="selectedMixtape = null"
+    >
+      <div class="mixtape-detail-box" @click.stop>
+        <div class="close-detail" @click="selectedMixtape = null">&times;</div>
         <img
-          v-if="song.artwork_url"
-          :src="song.artwork_url"
-          alt="Song artwork"
-          class="song-artwork"
+          :src="
+            selectedMixtape.cover ||
+            'https://res.cloudinary.com/dmlzg1ouv/image/upload/v1749412320/noimage_jvys4b.jpg'
+          "
+          :alt="selectedMixtape.name"
+          class="detail-img"
         />
-        <div class="song-info">
-          <span class="song-title">{{ song.name }}</span>
-          <span class="artist-name">by {{ song.artist }}</span>
+        <h2>{{ selectedMixtape.name }}</h2>
+        <p v-if="selectedMixtape.description">
+          {{ selectedMixtape.description }}
+        </p>
+        <div class="song-list">
+          <div
+            v-for="(song, index) in selectedMixtape.songs"
+            :key="index"
+            class="song-details-flex"
+          >
+            <img
+              v-if="song.artwork_url"
+              :src="song.artwork_url"
+              alt="Song artwork"
+              class="song-artwork"
+            />
+            <div class="song-info">
+              <span class="song-title">{{ song.name }}</span>
+              <span class="artist-name">by {{ song.artist }}</span>
+            </div>
+            <button
+              v-if="song.preview_url"
+              class="mini-audio-btn"
+              @click="playPreview(song.preview_url, index)"
+            >
+              <i
+                :class="
+                  playingIndex === index
+                    ? 'fa-solid fa-pause'
+                    : 'fa-solid fa-play'
+                "
+              ></i>
+            </button>
+          </div>
         </div>
-        <button 
-          v-if="song.preview_url" 
-          class="mini-audio-btn"
-          @click="playPreview(song.preview_url, index)"
-        >
-          <i :class="playingIndex === index ? 'fa-solid fa-pause' : 'fa-solid fa-play'"></i>
-        </button>
       </div>
     </div>
-  </div>
-</div>
-
-    
-
   </NavLayout>
 </template>
 
@@ -705,7 +789,8 @@ onMounted(() => {
 });
 
 async function getFullPhotoUrl(photoUrl) {
-  if (!photoUrl) return "/src/assets/noimage.jpg";
+  if (!photoUrl)
+    return "https://res.cloudinary.com/dmlzg1ouv/image/upload/v1749412320/noimage_jvys4b.jpg";
   if (photoUrl.startsWith("http")) return photoUrl;
   // Always use backend API URL for uploads
   const baseUrl = import.meta.env.VITE_API_URL;
@@ -1025,12 +1110,12 @@ const createMixtape = async () => {
         songs: formattedSongs,
       },
       {
-         headers: {
+        headers: {
           Authorization: `Bearer ${token}`,
         },
       }
     );
-      //Remove popup
+    //Remove popup
     //alert("Mixtape created successfully!");
     // Clear input fields after successful creation
     //showConfirmCreateSuccess.value = null;
@@ -1041,7 +1126,7 @@ const createMixtape = async () => {
     photoUrl.value = null;
 
     await fetchMixtapes(); // Refresh mixtapes list
-    closePopup();         // <-- Add this line to close the modal
+    closePopup(); // <-- Add this line to close the modal
   } catch (error) {
     console.error("Failed to create mixtape:", error);
     alert("Failed to create mixtape.");
@@ -1121,8 +1206,6 @@ const removeSongFromEditable = (index) => {
   editableMixtape.value.songs.splice(index, 1);
 };
 
-
-
 const editEditableSong = (index) => {
   editingSongIndex.value = index;
   const song = editableMixtape.value.songs[index];
@@ -1131,12 +1214,11 @@ const editEditableSong = (index) => {
   showEditSongModal.value = true;
 };
 
-
 function startEditMixtape(mixtape) {
   editingMixtapeId.value = mixtape.id;
   let backendCover = mixtape.cover;
   if (backendCover && backendCover.startsWith(import.meta.env.VITE_API_URL)) {
-    backendCover = backendCover.replace(import.meta.env.VITE_API_URL + '/', '');
+    backendCover = backendCover.replace(import.meta.env.VITE_API_URL + "/", "");
   }
   editableMixtape.value = {
     ...JSON.parse(JSON.stringify(mixtape)),
@@ -1144,7 +1226,7 @@ function startEditMixtape(mixtape) {
     coverPreview: mixtape.cover,
   };
   showSongModalEdit.value = false;
-  selectedMixtape.value = null;  // This ensures detail box is closed
+  selectedMixtape.value = null; // This ensures detail box is closed
 }
 
 async function saveEditMixtape(mixtape) {
@@ -1212,7 +1294,10 @@ const handleEditCoverUpload = async (e) => {
         }
       );
       editableMixtape.value.cover = response.data.imageUrl; // backend path
-      editableMixtape.value.coverPreview = `${import.meta.env.VITE_API_URL.replace(/\/$/, "")}/${response.data.imageUrl.replace(/^\/?/, "")}`; // full URL
+      editableMixtape.value.coverPreview = `${import.meta.env.VITE_API_URL.replace(
+        /\/$/,
+        ""
+      )}/${response.data.imageUrl.replace(/^\/?/, "")}`; // full URL
     } catch (err) {
       alert("Failed to upload image.");
     }
@@ -1316,7 +1401,7 @@ function selectSongFromSearch(song) {
     name: song.name,
     artist: song.artist,
     artwork_url: song.artwork_url,
-    preview_url: song.preview_url
+    preview_url: song.preview_url,
   });
   songSearchQuery.value = "";
   songSearchResults.value = [];
@@ -1370,7 +1455,6 @@ const uploadCoverIfNeeded = async () => {
     return null;
   }
 };
-
 
 // Speech recognition setup
 const recognizing = ref(false);
@@ -1427,27 +1511,34 @@ function playPreview(url, idx) {
 function isPollFinished(poll) {
   const createdAt = new Date(poll.created_at).getTime();
   const now = new Date().getTime();
-  return (now - createdAt) >= (poll.poll_length_seconds * 1000);
+  return now - createdAt >= poll.poll_length_seconds * 1000;
 }
 
 function getPollTimeRemaining(poll) {
-  if (!poll.created_at || !poll.poll_length_seconds) return 'Invalid poll data';
+  if (!poll.created_at || !poll.poll_length_seconds) return "Invalid poll data";
 
   const createdAt = new Date(poll.created_at).getTime();
   const now = new Date().getTime();
-  const endTime = createdAt + (poll.poll_length_seconds * 1000);
-  
+  const endTime = createdAt + poll.poll_length_seconds * 1000;
+
   if (now >= endTime) {
-    return 'Finished result';
+    return "Finished result";
   }
 
   const timeLeft = endTime - now;
   const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const hours = Math.floor(
+    (timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+  );
   const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
   const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
 
-  return `${String(days).padStart(2, '0')} days ${String(hours).padStart(2, '0')} hours ${String(minutes).padStart(2, '0')} minutes ${String(seconds).padStart(2, '0')} seconds`;
+  return `${String(days).padStart(2, "0")} days ${String(hours).padStart(
+    2,
+    "0"
+  )} hours ${String(minutes).padStart(2, "0")} minutes ${String(
+    seconds
+  ).padStart(2, "0")} seconds`;
 }
 
 // Add interval to update time remaining
@@ -1456,18 +1547,18 @@ const timeUpdateInterval = ref(null);
 async function deletePoll(pollId) {
   //Remove PopUp
   // if (!confirm('Are you sure you want to delete this poll?')) return;
-  
+
   try {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     await axios.delete(`${import.meta.env.VITE_API_URL}/api/polls/${pollId}`, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: { Authorization: `Bearer ${token}` },
     });
-    
+
     // Remove the poll from the local state
-    myPolls.value = myPolls.value.filter(poll => poll.id !== pollId);
+    myPolls.value = myPolls.value.filter((poll) => poll.id !== pollId);
   } catch (error) {
-    console.error('Failed to delete poll:', error);
-    alert('Failed to delete poll. Please try again.');
+    console.error("Failed to delete poll:", error);
+    alert("Failed to delete poll. Please try again.");
   }
 }
 </script>
@@ -1626,7 +1717,7 @@ button:active {
   margin-bottom: 0.3rem;
   border: 1px solid #e0e0e0;
   padding: 4px 20px 4px 20px;
-  border-radius: 10px;;
+  border-radius: 10px;
   color: white;
 }
 .poll-options {
@@ -1637,8 +1728,8 @@ button:active {
   padding: 0.7rem;
   border-radius: 10px;
   width: 100%;
-  height: 100px; 
-  overflow-y: auto; 
+  height: 100px;
+  overflow-y: auto;
   width: 100%;
   height: 100px;
   overflow-y: auto;
@@ -1650,7 +1741,7 @@ button:active {
 }
 
 .poll-container {
-  background: rgba(255, 255, 255, 0.65); 
+  background: rgba(255, 255, 255, 0.65);
   box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.25);
   backdrop-filter: blur(12px) saturate(180%);
   -webkit-backdrop-filter: blur(12px) saturate(180%);
@@ -1666,7 +1757,7 @@ button:active {
 
 .poll-content {
   background-color: #322848;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2); 
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(12px) brightness(1.05);
   -webkit-backdrop-filter: blur(12px) brightness(1.05);
   padding: 1.5rem;
@@ -1726,7 +1817,7 @@ button:active {
 }
 
 .tabs-button::after {
-  content: '';
+  content: "";
   position: absolute;
   width: 0;
   height: 2px;
@@ -1800,7 +1891,6 @@ button:active {
   margin-bottom: 1rem;
 }
 
-
 .page-title {
   font-weight: 700;
   font-size: 1.8rem;
@@ -1840,7 +1930,7 @@ button:active {
 
 .info-box {
   flex: 1;
-  background: rgba(255, 255, 255, 0.65); 
+  background: rgba(255, 255, 255, 0.65);
   box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.25);
   backdrop-filter: blur(12px) saturate(180%);
   -webkit-backdrop-filter: blur(12px) saturate(180%);
@@ -2036,7 +2126,7 @@ button:active {
 }
 
 .mixtape-item {
-  background: rgba(255, 255, 255, 0.65); 
+  background: rgba(255, 255, 255, 0.65);
   box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.25);
   backdrop-filter: blur(12px) saturate(180%);
   -webkit-backdrop-filter: blur(12px) saturate(180%);
@@ -2052,7 +2142,7 @@ button:active {
   margin-bottom: 10px;
 }
 
-.mixtape-title{
+.mixtape-title {
   margin-top: 10px;
   margin-left: 10px;
   font-size: 20px;
@@ -2294,7 +2384,6 @@ button {
   color: #322848;
   background: rgba(255, 255, 255, 0.495);
   text-align: center;
-  
 }
 .mixtape-name:focus,
 .description-box:focus {
@@ -2307,7 +2396,7 @@ button {
 .description-box {
   height: 40px;
   resize: none;
-  border-radius:5px;
+  border-radius: 5px;
 }
 
 .song-item {
@@ -2339,7 +2428,7 @@ button {
 }
 
 .add-song-btn :hover {
-background-color: transparent !important;
+  background-color: transparent !important;
 }
 
 .popup-buttons button {
@@ -2514,7 +2603,7 @@ background-color: transparent !important;
   margin-bottom: 1rem;
 }
 
-.song-list-scroll{
+.song-list-scroll {
   border: 1px solid #444;
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.495);
@@ -2689,7 +2778,7 @@ background-color: transparent !important;
 
 /* For Mixtape PopUp */
 .close-detail {
-   position: absolute;
+  position: absolute;
   top: 1rem;
   right: 1rem;
   font-size: 2rem;

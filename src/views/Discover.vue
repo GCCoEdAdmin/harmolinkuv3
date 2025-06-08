@@ -1,30 +1,29 @@
 <template>
-   <!-- Popup Favorite Confirmation-->
-           <div v-if="showConfirmFavorite" class="modal-overlay">
-        <div class="confirm-box">
-          <p>Profile added to favorites!</p>
-          <div class="confirm-buttons">
-            <button @click="showConfirmFavorite=null">Close</button>
-            <!-- <button @click="showConfirmDelete = false">No</button> -->
-          </div>
-        </div>
+  <!-- Popup Favorite Confirmation-->
+  <div v-if="showConfirmFavorite" class="modal-overlay">
+    <div class="confirm-box">
+      <p>Profile added to favorites!</p>
+      <div class="confirm-buttons">
+        <button @click="showConfirmFavorite = null">Close</button>
+        <!-- <button @click="showConfirmDelete = false">No</button> -->
       </div>
-      <!-- Popup Favorite Confirmation-->
+    </div>
+  </div>
+  <!-- Popup Favorite Confirmation-->
 
-         <!-- Popup Favorite Confirmation-->
-           <div v-if="showConfirmDiscard" class="modal-overlay">
-        <div class="confirm-box">
-          <p>Profile discarded!</p>
-          <div class="confirm-buttons">
-            <button @click="showConfirmDiscard=null">Close</button>
-            <!-- <button @click="showConfirmDelete = false">No</button> -->
-          </div>
-        </div>
+  <!-- Popup Favorite Confirmation-->
+  <div v-if="showConfirmDiscard" class="modal-overlay">
+    <div class="confirm-box">
+      <p>Profile discarded!</p>
+      <div class="confirm-buttons">
+        <button @click="showConfirmDiscard = null">Close</button>
+        <!-- <button @click="showConfirmDelete = false">No</button> -->
       </div>
-      <!-- Popup Favorite Confirmation-->
+    </div>
+  </div>
+  <!-- Popup Favorite Confirmation-->
 
   <transition name="fade">
-
     <NavLayout>
       <div class="animated-background"></div>
       <div class="favorites-wrapper">
@@ -228,7 +227,10 @@
                     <button
                       class="heart-btn"
                       :class="{ clicked: currentProfile.favorited }"
-                      @click="showConfirmFavorite = true; animateHeart()"
+                      @click="
+                        showConfirmFavorite = true;
+                        animateHeart();
+                      "
                       title="Add to Favorites"
                     >
                       <i class="fa-solid fa-heart"></i>
@@ -237,7 +239,10 @@
                     <!-- Discard Button -->
                     <button
                       class="x-btn"
-                      @click="showConfirmDiscard = true;animateX()"
+                      @click="
+                        showConfirmDiscard = true;
+                        animateX();
+                      "
                       :disabled="currentProfile.favorited"
                       title="Discard Profile"
                     >
@@ -687,7 +692,8 @@ function filterProfiles() {
 
 // Utility function to get full photo URL
 function getFullPhotoUrl(photoUrl) {
-  if (!photoUrl) return "/src/assets/noimage.jpg";
+  if (!photoUrl)
+    return "https://res.cloudinary.com/dmlzg1ouv/image/upload/v1749412320/noimage_jvys4b.jpg";
   if (photoUrl.startsWith("http")) return photoUrl;
   // Always use backend API URL for uploads
   const baseUrl = import.meta.env.VITE_API_URL;
@@ -870,7 +876,7 @@ button {
 }
 
 .front {
-  background: rgba(255, 255, 255, 0.65); 
+  background: rgba(255, 255, 255, 0.65);
   box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.25);
   backdrop-filter: blur(12px) saturate(180%);
   -webkit-backdrop-filter: blur(12px) saturate(180%);
@@ -1417,7 +1423,7 @@ button {
     width: 100%;
   }
   .unpack-button {
-    width:80%;
+    width: 80%;
   }
 }
 /* Additional styles for very small screens */
@@ -1438,7 +1444,7 @@ button {
     width: 100%;
   }
   .unpack-button {
-    width:100%;
+    width: 100%;
   }
 }
 
@@ -1512,5 +1518,4 @@ button {
   z-index: 10;
   pointer-events: none;
 }
-
 </style>
