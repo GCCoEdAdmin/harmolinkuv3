@@ -749,6 +749,7 @@ async function fetchProfile() {
       }
     );
     const data = response.data.profile;
+    console.log(response.data);
     const img = data.profile_image || DEFAULT_PROFILE_IMAGE;
     profile.value = {
       name: data.name || "",
