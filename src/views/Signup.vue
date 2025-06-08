@@ -292,6 +292,7 @@ const handleSignup = async () => {
     loading.value = true;
 
     const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    console.log(userTimezone);
 
     const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/signup`, {
       username: username.value,
