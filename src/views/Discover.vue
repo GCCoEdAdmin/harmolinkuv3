@@ -70,9 +70,7 @@
                     {{ currentProfile.gender }}
                   </p>
                   <img
-                    :src="
-                      getFullPhotoUrl(currentProfile.mixtapes[0]?.photo_url)
-                    "
+                    :src="getFullPhotoUrl(currentProfile.mixtapes[0]?.cover)"
                     class="mixtape-image"
                   />
                   <h2 class="mixtape-title-front">
@@ -110,7 +108,7 @@
                   v-if="currentProfile.mixtapes?.length > 0"
                 >
                   <img
-                    :src="getFullPhotoUrl(currentProfile.mixtapes[0].photo_url)"
+                    :src="getFullPhotoUrl(currentProfile.mixtapes[0].cover)"
                     class="mixtape-image"
                   />
                   <h3 class="mixtape-title-back">
@@ -377,7 +375,7 @@ async function fetchProfiles() {
 
   if (profiles.value.length > 0) {
     console.log("Using saved profiles from localStorage.");
-    filterProfiles(); // <-- Always filter after loading
+    filterProfiles();
     return;
   }
 
@@ -389,14 +387,29 @@ async function fetchProfiles() {
       }
     );
 
+    console.log("API Response:", response.data); // Debug log
+
     profiles.value = response.data.map((profile) => ({
       ...profile,
       viewed: false,
+      mixtapes: (profile.mixtapes || []).map((mixtape) => ({
+        ...mixtape,
+        // Ensure we're using the correct field names
+        cover: mixtape.cover || mixtape.photo_url, // Handle both possible field names
+        songs: (mixtape.songs || []).map((song) => ({
+          ...song,
+          song_name: song.name || song.song_name,
+          artist_name: song.artist || song.artist_name,
+          preview_url: song.preview_url || song.url,
+          artwork_url: song.artwork_url || song.artworkUrl100 || song.artwork,
+        })),
+      })),
     }));
+
     currentIndex.value = 0;
     viewedProfiles.value = 0;
     saveStateToLocalStorage();
-    filterProfiles(); // <-- Always filter after fetching
+    filterProfiles();
   } catch (error) {
     console.error("Error fetching profiles:", error);
     if (error.response?.status === 401 || error.response?.status === 403) {
