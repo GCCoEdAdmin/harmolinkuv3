@@ -791,14 +791,15 @@ onMounted(() => {
 async function getFullPhotoUrl(photoUrl) {
   if (
     !photoUrl ||
+    photoUrl.startsWith("http://") ||
     photoUrl.startsWith("https://harmolinku-back.onrender.com/uploads/")
   ) {
     return "https://res.cloudinary.com/dmlzg1ouv/image/upload/v1749412320/noimage_jvys4b.jpg";
   }
-  if (photoUrl.startsWith("http")) return photoUrl;
-  // Always use backend API URL for uploads
-  const baseUrl = import.meta.env.VITE_API_URL;
-  return `${baseUrl}/${photoUrl}`;
+  //   if (photoUrl.startsWith("http")) return photoUrl;
+  //   // Always use backend API URL for uploads
+  //   const baseUrl = import.meta.env.VITE_API_URL;
+  //   return `${baseUrl}/${photoUrl}`;
 }
 
 async function toggleSongPlay(index) {
