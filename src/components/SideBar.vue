@@ -503,6 +503,8 @@ const createMixtape = async () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
+
+              console.log(response.data);
       // Always update preview with backend path after save
       if (response.data.photoUrl) {
         photoPath.value = response.data.photoUrl;
