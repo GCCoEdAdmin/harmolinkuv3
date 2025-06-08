@@ -457,11 +457,11 @@ async function handlePhotoUpload(event) {
           },
         }
       );
+      console.log(response.data);
       // Save backend path for DB
       photoPath.value = response.data.imageUrl;
       // Show full URL for preview (from backend, not blob)
       photoUrl.value = getFullPhotoUrl(response.data.imageUrl);
-      console.log(response.data)
     } catch (err) {
       alert("Failed to upload image.");
       photoUrl.value = "/src/assets/noimage.jpg";
