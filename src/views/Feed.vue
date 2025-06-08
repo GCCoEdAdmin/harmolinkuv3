@@ -1,346 +1,417 @@
 <template>
-  
-        <!-- Popup confirmation DeletePoll-->
-           <div v-if="showConfirmDelete" class="modal-overlay">
-        <div class="confirm-box">
-          <p>Are you sure you want to delete poll?</p>
-          <div class="confirm-buttons">
-            <button @click="deletePoll(); showConfirmDelete=null">Yes</button>
-            <button @click="showConfirmDelete = false">No</button>
-          </div>
-        </div>
-      </div>
-       <!-- Popup confirmation DeletePoll-->
-
-  <div v-if="showCreatePoll" class="popup-overlay">
-        <div class="popup-container">
-          <div class="popup-header">
-            <h2>Poll</h2>
-            <button class="close-btn" @click="closeCreatePollPopup">×</button>
-          </div>
-        <input
-          class="poll-input"
-          v-model="newPollQuestion"
-          placeholder="Enter your poll question"
-        />
-
-        <div class="options-label">Options</div>
-          <div class="options-inputs">
-          <div v-for="(option, index) in newPollOptions" :key="index" class="option-row">
-            <input
-              class="poll-option-input"
-              v-model="newPollOptions[index]"
-              placeholder="Enter option"
-            />
-            <button v-if="newPollOptions.length > 1" @click="removePollOption(index)">−</button>
-          </div>
-          <button
-            v-if="newPollOptions.length < 5"
-            class="add-option-btn"
-            @click="addPollOption"
-          >
-            + Add Option
-          </button>
-        </div>
-
-        <div class="poll-length-section">
-          <label>Poll Length:</label><br>
-          <select v-model="pollDays" class="poll-length-select">
-            <option v-for="d in daysOptions" :key="d" :value="d">{{ d }} day{{ d === 1 ? '' : 's' }}</option>
-          </select>
-          <select v-model="pollHours" class="poll-length-select">
-            <option v-for="h in hoursOptions" :key="h" :value="h">{{ h }} hour{{ h === 1 ? '' : 's' }}</option>
-          </select>
-          <select v-model="pollMinutes" class="poll-length-select">
-            <option v-for="m in minutesOptions" :key="m" :value="m">{{ m }} minute{{ m === 1 ? '' : 's' }}</option>
-          </select>
-        </div><br>
-
-        <button class="submit-poll-btn" @click="createPoll">Create Poll</button>
+  <!-- Popup confirmation DeletePoll-->
+  <div v-if="showConfirmDelete" class="modal-overlay">
+    <div class="confirm-box">
+      <p>Are you sure you want to delete poll?</p>
+      <div class="confirm-buttons">
+        <button
+          @click="
+            deletePoll();
+            showConfirmDelete = null;
+          "
+        >
+          Yes
+        </button>
+        <button @click="showConfirmDelete = false">No</button>
       </div>
     </div>
+  </div>
+  <!-- Popup confirmation DeletePoll-->
+
+  <div v-if="showCreatePoll" class="popup-overlay">
+    <div class="popup-container">
+      <div class="popup-header">
+        <h2>Poll</h2>
+        <button class="close-btn" @click="closeCreatePollPopup">×</button>
+      </div>
+      <input
+        class="poll-input"
+        v-model="newPollQuestion"
+        placeholder="Enter your poll question"
+      />
+
+      <div class="options-label">Options</div>
+      <div class="options-inputs">
+        <div
+          v-for="(option, index) in newPollOptions"
+          :key="index"
+          class="option-row"
+        >
+          <input
+            class="poll-option-input"
+            v-model="newPollOptions[index]"
+            placeholder="Enter option"
+          />
+          <button
+            v-if="newPollOptions.length > 1"
+            @click="removePollOption(index)"
+          >
+            −
+          </button>
+        </div>
+        <button
+          v-if="newPollOptions.length < 5"
+          class="add-option-btn"
+          @click="addPollOption"
+        >
+          + Add Option
+        </button>
+      </div>
+
+      <div class="poll-length-section">
+        <label>Poll Length:</label><br />
+        <select v-model="pollDays" class="poll-length-select">
+          <option v-for="d in daysOptions" :key="d" :value="d">
+            {{ d }} day{{ d === 1 ? "" : "s" }}
+          </option>
+        </select>
+        <select v-model="pollHours" class="poll-length-select">
+          <option v-for="h in hoursOptions" :key="h" :value="h">
+            {{ h }} hour{{ h === 1 ? "" : "s" }}
+          </option>
+        </select>
+        <select v-model="pollMinutes" class="poll-length-select">
+          <option v-for="m in minutesOptions" :key="m" :value="m">
+            {{ m }} minute{{ m === 1 ? "" : "s" }}
+          </option>
+        </select>
+      </div>
+      <br />
+
+      <button class="submit-poll-btn" @click="createPoll">Create Poll</button>
+    </div>
+  </div>
 
   <NavLayout>
     <div class="animated-background"></div>
-       <div class="favorites-wrapper">
+    <div class="favorites-wrapper">
       <h1 class="favorites-title">Feed</h1>
       <p class="favorites-description">
-       Your interactive hub of harmony! Create polls cast votes, and keep the vibe flowing.
+        Your interactive hub of harmony! Create polls cast votes, and keep the
+        vibe flowing.
       </p>
-</div>
+    </div>
 
-
-      <div class="grid-container">
-      
-          <div class="left-column">
+    <div class="grid-container">
+      <div class="left-column">
         <!-- Navigation Buttons -->
-          <button 
-            class="nav-button left" 
-            @click="prevProfile" 
-            :disabled="currentIndex === 0 || isFlipped"
-          > <i class="fa-solid fa-circle-arrow-left"></i>
-          </button>
-          </div>
-
-        <div class="main-column">
-<!-- start of popup -->         
-      
-<!-- end of popup -->
-
-      <div class="poll-scroll">
-
-      <div style="display: flex; padding:10px;">
-        <i class="fa-solid fa-square-poll-horizontal fa-2x" style="color:#080d2a; margin-right: 5px;"></i>
-        <button class="create-poll-button" @click="openCreatePollPopup">Create Poll</button>
+        <button
+          class="nav-button left"
+          @click="prevProfile"
+          :disabled="currentIndex === 0 || isFlipped"
+        >
+          <i class="fa-solid fa-circle-arrow-left"></i>
+        </button>
       </div>
 
-        <!-- Show loading spinner while loading -->
-        <div v-if="loading" style="text-align:center; color:#322848; margin-top:2rem;">
-          Loading...
-        </div>
-        <!-- Show poll container if we have polls -->
-        <div v-else-if="currentProfile" class="poll-container">
-          <!-- Poll Container -->
-          <div class="poll-content">
+      <div class="main-column">
+        <!-- start of popup -->
 
+        <!-- end of popup -->
 
-            <div style="text-align: right;">
-             <button
-                v-if="currentProfile.userId === loggedInUserId"
-                class="delete-poll-btn"
-                @click="showConfirmDelete=true"
-                style="margin-left: auto; background: #ff4d4f; color: white; border: none; border-radius: 6px; padding: 8px 16px; cursor: pointer;"
-              >
-                Delete Poll
-              </button>
+        <div class="poll-scroll">
+          <div style="display: flex; padding: 10px">
+            <i
+              class="fa-solid fa-square-poll-horizontal fa-2x"
+              style="color: #080d2a; margin-right: 5px"
+            ></i>
+            <button class="create-poll-button" @click="openCreatePollPopup">
+              Create Poll
+            </button>
+          </div>
+
+          <!-- Show loading spinner while loading -->
+          <div
+            v-if="loading"
+            style="text-align: center; color: #322848; margin-top: 2rem"
+          >
+            Loading...
+          </div>
+          <!-- Show poll container if we have polls -->
+          <div v-else-if="currentProfile" class="poll-container">
+            <!-- Poll Container -->
+            <div class="poll-content">
+              <div style="text-align: right">
+                <button
+                  v-if="currentProfile.userId === loggedInUserId"
+                  class="delete-poll-btn"
+                  @click="showConfirmDelete = true"
+                  style="
+                    margin-left: auto;
+                    background: #ff4d4f;
+                    color: white;
+                    border: none;
+                    border-radius: 6px;
+                    padding: 8px 16px;
+                    cursor: pointer;
+                  "
+                >
+                  Delete Poll
+                </button>
               </div>
               <!-- DITO -->
 
-            <div class="poll-profile">
-              <img :src="currentProfile.image" alt="Profile Image" class="poll-profile-image" />
-              <div class="poll-profile-info">
-                <span class="poll-username">{{ currentProfile.name }}</span><br />
-                <span class="poll-age-gender">{{ currentProfile.age }}, {{ currentProfile.gender }}</span><br />
-                <span class="poll-created-at">
-                  Posted: {{ formatDateTime(currentProfile.createdAt) }} ({{ timeAgo(currentProfile.createdAt) }})
+              <div class="poll-profile">
+                <img
+                  :src="currentProfile.image"
+                  alt="Profile Image"
+                  class="poll-profile-image"
+                />
+                <div class="poll-profile-info">
+                  <span class="poll-username">{{ currentProfile.name }}</span
+                  ><br />
+                  <span class="poll-age-gender"
+                    >{{ currentProfile.age }}, {{ currentProfile.gender }}</span
+                  ><br />
+                  <span class="poll-created-at">
+                    Posted: {{ formatDateTime(currentProfile.createdAt) }} ({{
+                      timeAgo(currentProfile.createdAt)
+                    }})
+                  </span>
+                </div>
+              </div>
+
+              <div class="poll-description">
+                <p>{{ currentProfile.poll.question }}</p>
+              </div>
+
+              <!-- Poll Options -->
+              <div class="poll-options-container">
+                <div
+                  class="poll-options"
+                  v-for="(option, index) in currentProfile.poll.options"
+                  :key="index"
+                >
+                  <div
+                    class="poll-option"
+                    :class="{
+                      winner:
+                        pollEnded &&
+                        winningOptionIndex &&
+                        winningOptionIndex.includes(index),
+                    }"
+                    @click="
+                      currentProfile.userId !== loggedInUserId &&
+                        !pollEnded &&
+                        vote(index)
+                    "
+                    style="cursor: pointer"
+                  >
+                    <input
+                      type="radio"
+                      :name="`poll-option-${currentIndex.value}`"
+                      :value="index"
+                      :checked="option.voted"
+                      :disabled="
+                        currentProfile.userId === loggedInUserId || pollEnded
+                      "
+                      v-model="currentVote"
+                      style="display: none"
+                      readonly
+                    />
+                    <p
+                      :class="{ voted: option.voted }"
+                      style="margin-bottom: 0"
+                    >
+                      {{ option.text }}
+                    </p>
+                    <!-- <span class="poll-percentage">{{ calculatePercentage(index) }}%</span> -->
+
+                    <!-- Progress Bar -->
+                    <div class="poll-progress-bar-wrapper">
+                      <div class="poll-progress-bar-bg">
+                        <div
+                          class="poll-progress-bar-fill"
+                          :style="{ width: calculatePercentage(index) + '%' }"
+                        ></div>
+                      </div>
+                      <span class="poll-progress-bar-label"
+                        >{{ calculatePercentage(index) }}%</span
+                      >
+                    </div>
+                    <!-- Progress Bar -->
+                  </div>
+                </div>
+              </div>
+
+              <!-- Number of Votes -->
+              <div class="poll-votes">
+                <span>
+                  {{ totalVotes }} vote{{ totalVotes === 1 ? "" : "s" }} ·
+                  {{
+                    getTimeLeft(
+                      currentProfile.createdAt,
+                      currentProfile.pollLengthSeconds
+                    )
+                  }}
+                  <span
+                    v-if="
+                      getTimeLeft(
+                        currentProfile.createdAt,
+                        currentProfile.pollLengthSeconds
+                      ) !== 'Final results'
+                    "
+                  >
+                    left</span
+                  >
                 </span>
               </div>
-             
-            </div>
-
-            <div class="poll-description">
-              <p>{{ currentProfile.poll.question }}</p>
-            </div>
-
-            <!-- Poll Options -->
-            <div class="poll-options-container">
-              <div
-                class="poll-options"
-                v-for="(option, index) in currentProfile.poll.options"
-                :key="index"
-              >
-                <div
-                  class="poll-option"
-                  :class="{
-                    'winner': pollEnded && winningOptionIndex && winningOptionIndex.includes(index)
-                  }"
-                  @click="currentProfile.userId !== loggedInUserId && !pollEnded && vote(index)"
-                  style="cursor: pointer;"
-                >
-                  <input 
-                    type="radio" 
-                    :name="`poll-option-${currentIndex.value}`" 
-                    :value="index" 
-                    :checked="option.voted"
-                    :disabled="currentProfile.userId === loggedInUserId || pollEnded"
-                    v-model="currentVote" 
-                    style="display: none;"
-                    readonly
-                  />
-                  <p :class="{'voted': option.voted}" style="margin-bottom: 0;">
-                    {{ option.text }}
-                  </p>
-                  <!-- <span class="poll-percentage">{{ calculatePercentage(index) }}%</span> -->
-
-
-
-                  <!-- Progress Bar -->
-                   <div class="poll-progress-bar-wrapper">
-                  <div class="poll-progress-bar-bg">
-                    <div
-                      class="poll-progress-bar-fill"
-                      :style="{ width: calculatePercentage(index) + '%' }"
-                    ></div>
-                  </div>
-                  <span class="poll-progress-bar-label">{{ calculatePercentage(index) }}%</span>
-                </div>
-                 <!-- Progress Bar -->
-
-                </div>
-               
-              </div>
-            </div>
-            
-
-            <!-- Number of Votes -->
-            <div class="poll-votes">
-              <span>
-                {{ totalVotes }} vote{{ totalVotes === 1 ? '' : 's' }} ·
-                {{ getTimeLeft(currentProfile.createdAt, currentProfile.pollLengthSeconds) }}
-                <span v-if="getTimeLeft(currentProfile.createdAt, currentProfile.pollLengthSeconds) !== 'Final results'"> left</span>
-              </span>
             </div>
           </div>
-          
-        </div>
-        <div v-else class="no-polls-message styled-no-polls">
-          <p>No polls available yet. Be the first to create one!</p>
-        </div>
-      </div>
-        </div>
-
-        <div class="right-column">
-          <!-- Navigation Buttons -->
-              <button 
-                class="nav-button right" 
-                @click="nextProfile" 
-                :disabled="currentIndex === profiles.length - 1 || isFlipped"
-              > <i class="fa-solid fa-circle-arrow-right"></i>
-              </button>
+          <div v-else class="no-polls-message styled-no-polls">
+            <p>No polls available yet. Be the first to create one!</p>
           </div>
-
+        </div>
       </div>
 
-
-      
+      <div class="right-column">
+        <!-- Navigation Buttons -->
+        <button
+          class="nav-button right"
+          @click="nextProfile"
+          :disabled="currentIndex === profiles.length - 1 || isFlipped"
+        >
+          <i class="fa-solid fa-circle-arrow-right"></i>
+        </button>
+      </div>
+    </div>
   </NavLayout>
 </template>
 
 <script setup>
-  import { ref, computed, onMounted } from 'vue'
-  import NavLayout from '../layouts/NavLayout.vue'
-  import axios from 'axios'
-  import { jwtDecode } from "jwt-decode";
+import { ref, computed, onMounted } from "vue";
+import NavLayout from "../layouts/NavLayout.vue";
+import axios from "axios";
+import { jwtDecode } from "jwt-decode";
 
-  const profiles = ref([])
-  const currentIndex = ref(0)
-  const hasVoted = ref(false)
-  const currentVote = ref(null)
-  const showCreatePoll = ref(false)
-  const newPollQuestion = ref('')
-  const newPollOptions = ref(['', '']) 
-  const isFlipped = ref(false);
-  const loading = ref(true)
-  const showConfirmDelete = ref(false);
+const profiles = ref([]);
+const currentIndex = ref(0);
+const hasVoted = ref(false);
+const currentVote = ref(null);
+const showCreatePoll = ref(false);
+const newPollQuestion = ref("");
+const newPollOptions = ref(["", ""]);
+const isFlipped = ref(false);
+const loading = ref(true);
+const showConfirmDelete = ref(false);
 
-  const token = localStorage.getItem('token');
-  let loggedInUserId = null;
-  if (token) {
-    try {
-      const decoded = jwtDecode(token);
-      loggedInUserId = decoded.id;
-    } catch (e) {
-      loggedInUserId = null;
-    }
+const token = localStorage.getItem("token");
+let loggedInUserId = null;
+if (token) {
+  try {
+    const decoded = jwtDecode(token);
+    loggedInUserId = decoded.id;
+  } catch (e) {
+    loggedInUserId = null;
   }
+}
 
-  const API_URL = import.meta.env.VITE_API_URL
+const API_URL = import.meta.env.VITE_API_URL;
 
-  onMounted(fetchPolls)
+onMounted(fetchPolls);
 
-  async function fetchPolls() {
-    loading.value = true
-    try {
-      const { data } = await axios.get(`${API_URL}/api/feed`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-     
-      profiles.value = data.map(poll => ({
-        name: poll.user.name,
-        age: poll.user.birthday ? calculateAge(poll.user.birthday) : '',
-        gender: poll.user.gender || '',
-        image: poll.user.profile_image
-          ? poll.user.profile_image.startsWith('http')
-              ? poll.user.profile_image
-              : `http://localhost:3000/${poll.user.profile_image.replace(/^\/+/, '').replace(/\\/g, '/')}`
-          : '/src/assets/default-profile.jpg',
-        userId: poll.user.id,
-        createdAt: poll.created_at, 
-        pollLengthSeconds: poll.poll_length_seconds,
-        poll: {
-          question: poll.question,
-          options: poll.options.map(opt => ({
-            id: opt.id,
-            text: opt.text,
-            votes: opt.votes,
-            voted: poll.user_vote_option_id === opt.id
-          })),
-          id: poll.id
-        }
-      }))
-      currentIndex.value = 0
-      resetVoteState()
-    } catch (e) {
-      alert('Failed to fetch polls')
-    } finally {
-      loading.value = false
-    }
+async function fetchPolls() {
+  loading.value = true;
+  try {
+    const { data } = await axios.get(`${API_URL}/api/feed`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    profiles.value = data.map((poll) => ({
+      name: poll.user.name,
+      age: poll.user.birthday ? calculateAge(poll.user.birthday) : "",
+      gender: poll.user.gender || "",
+      image: poll.user.profile_image
+        ? poll.user.profile_image.startsWith("http")
+          ? poll.user.profile_image
+          : `http://localhost:3000/${poll.user.profile_image
+              .replace(/^\/+/, "")
+              .replace(/\\/g, "/")}`
+        : "/src/assets/default-profile.jpg",
+      userId: poll.user.id,
+      createdAt: poll.created_at,
+      pollLengthSeconds: poll.poll_length_seconds,
+      poll: {
+        question: poll.question,
+        options: poll.options.map((opt) => ({
+          id: opt.id,
+          text: opt.text,
+          votes: opt.votes,
+          voted: poll.user_vote_option_id === opt.id,
+        })),
+        id: poll.id,
+      },
+    }));
+    currentIndex.value = 0;
+    resetVoteState();
+  } catch (e) {
+    alert("Failed to fetch polls");
+  } finally {
+    loading.value = false;
   }
+}
 
-  const currentProfile = computed(() =>
-    profiles.value.length > 0 ? profiles.value[currentIndex.value] : null
-  );
+const currentProfile = computed(() =>
+  profiles.value.length > 0 ? profiles.value[currentIndex.value] : null
+);
 
-  function nextProfile() {
-    if (currentIndex.value < profiles.value.length - 1) {
-      currentIndex.value++;
-      updateCurrentVote();
-      resetVoteState();
-    }
+function nextProfile() {
+  if (currentIndex.value < profiles.value.length - 1) {
+    currentIndex.value++;
+    updateCurrentVote();
+    resetVoteState();
   }
-  function prevProfile() {
-    if (currentIndex.value > 0) {
-      currentIndex.value--;
-      updateCurrentVote();
-      resetVoteState();
-    }
+}
+function prevProfile() {
+  if (currentIndex.value > 0) {
+    currentIndex.value--;
+    updateCurrentVote();
+    resetVoteState();
   }
-  function updateCurrentVote() {
-    const poll = profiles.value[currentIndex.value]?.poll;
-    if (!poll) {
-      currentVote.value = null;
-      return;
-    }
-    const idx = poll.options.findIndex(opt => opt.voted);
-    currentVote.value = idx !== -1 ? idx : null;
+}
+function updateCurrentVote() {
+  const poll = profiles.value[currentIndex.value]?.poll;
+  if (!poll) {
+    currentVote.value = null;
+    return;
   }
+  const idx = poll.options.findIndex((opt) => opt.voted);
+  currentVote.value = idx !== -1 ? idx : null;
+}
 
-  function resetVoteState() {
-    hasVoted.value = false
-    currentVote.value = null
-  }
+function resetVoteState() {
+  hasVoted.value = false;
+  currentVote.value = null;
+}
 
-  async function vote(optionIndex) {
+async function vote(optionIndex) {
   if (pollEnded.value || currentProfile.value.userId === loggedInUserId) return;
   const poll = profiles.value[currentIndex.value].poll;
-  const previousVoteIndex = poll.options.findIndex(opt => opt.voted);
+  const previousVoteIndex = poll.options.findIndex((opt) => opt.voted);
 
   // If already voted for this option, do nothing
   if (previousVoteIndex === optionIndex) return;
 
   const option = poll.options[optionIndex];
   try {
-    await axios.post(`${API_URL}/api/feed/vote`, {
-      pollId: poll.id,
-      optionId: option.id
-    }, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    await axios.post(
+      `${API_URL}/api/feed/vote`,
+      {
+        pollId: poll.id,
+        optionId: option.id,
+      },
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
 
     // Update votes locally
     if (previousVoteIndex !== -1) {
       // Decrement previous option's votes
-      poll.options[previousVoteIndex].votes = Math.max(0, poll.options[previousVoteIndex].votes - 1);
+      poll.options[previousVoteIndex].votes = Math.max(
+        0,
+        poll.options[previousVoteIndex].votes - 1
+      );
       poll.options[previousVoteIndex].voted = false;
     }
     // Increment new option's votes
@@ -350,179 +421,191 @@
     hasVoted.value = true;
     currentVote.value = optionIndex;
   } catch (e) {
-    alert('Failed to vote');
+    alert("Failed to vote");
   }
 }
 
-  function calculatePercentage(optionIndex) {
-    const profile = profiles.value[currentIndex.value]
-    const optionVotes = profile.poll.options[optionIndex].votes
-    const totalVotes = profile.poll.options.reduce((sum, option) => sum + option.votes, 0)
-    return totalVotes > 0 ? ((optionVotes / totalVotes) * 100).toFixed(1) : 0
+function calculatePercentage(optionIndex) {
+  const profile = profiles.value[currentIndex.value];
+  const optionVotes = profile.poll.options[optionIndex].votes;
+  const totalVotes = profile.poll.options.reduce(
+    (sum, option) => sum + option.votes,
+    0
+  );
+  return totalVotes > 0 ? ((optionVotes / totalVotes) * 100).toFixed(1) : 0;
+}
+
+const totalVotes = computed(() => {
+  const profile = profiles.value[currentIndex.value];
+  return profile.poll.options.reduce((sum, option) => sum + option.votes, 0);
+});
+
+// Poll creation logic
+function openCreatePollPopup() {
+  showCreatePoll.value = true;
+}
+
+function closeCreatePollPopup() {
+  showCreatePoll.value = false;
+  newPollQuestion.value = "";
+  newPollOptions.value = [""];
+}
+
+function addPollOption() {
+  if (newPollOptions.value.length < 5) {
+    newPollOptions.value.push("");
   }
+}
 
-  const totalVotes = computed(() => {
-    const profile = profiles.value[currentIndex.value]
-    return profile.poll.options.reduce((sum, option) => sum + option.votes, 0)
-  })
+function removePollOption(index) {
+  newPollOptions.value.splice(index, 1);
+}
 
-  // Poll creation logic
-  function openCreatePollPopup() {
-    showCreatePoll.value = true
+async function createPoll() {
+  const cleanedOptions = newPollOptions.value.filter(
+    (opt) => opt.trim() !== ""
+  );
+  if (!newPollQuestion.value.trim() || cleanedOptions.length < 2) {
+    alert("Please enter a question and at least two options.");
+    return;
   }
-
-  function closeCreatePollPopup() {
-    showCreatePoll.value = false
-    newPollQuestion.value = ''
-    newPollOptions.value = ['']
+  // Calculate total length in seconds (or send as separate fields)
+  const pollLengthSeconds =
+    pollDays.value * 86400 + pollHours.value * 3600 + pollMinutes.value * 60;
+  if (pollLengthSeconds === 0) {
+    alert("Poll length must be greater than 0.");
+    return;
   }
-
-  function addPollOption() {
-    if (newPollOptions.value.length < 5) {
-      newPollOptions.value.push('')
-    }
-  }
-
-  function removePollOption(index) {
-    newPollOptions.value.splice(index, 1)
-  }
-
-  async function createPoll() {
-    const cleanedOptions = newPollOptions.value.filter(opt => opt.trim() !== '');
-    if (!newPollQuestion.value.trim() || cleanedOptions.length < 2) {
-      alert('Please enter a question and at least two options.');
-      return;
-    }
-    // Calculate total length in seconds (or send as separate fields)
-    const pollLengthSeconds = pollDays.value * 86400 + pollHours.value * 3600 + pollMinutes.value * 60;
-    if (pollLengthSeconds === 0) {
-      alert('Poll length must be greater than 0.');
-      return;
-    }
-    try {
-      await axios.post(`${API_URL}/api/feed`, {
+  try {
+    await axios.post(
+      `${API_URL}/api/feed`,
+      {
         question: newPollQuestion.value.trim(),
         options: cleanedOptions,
-        pollLengthSeconds 
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      closeCreatePollPopup();
-      await fetchPolls();
-    } catch (e) {
-      alert('Failed to create poll');
-    }
+        pollLengthSeconds,
+      },
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    closeCreatePollPopup();
+    await fetchPolls();
+  } catch (e) {
+    alert("Failed to create poll");
   }
+}
 
-  async function deletePoll() {
-    //Remove Java Popup
-    // if (!confirm('Are you sure you want to delete this poll?')) return;
-    const pollId = currentProfile.value.poll.id;
-    try {
-      await axios.delete(`${API_URL}/api/feed/${pollId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      await fetchPolls();
-    } catch (e) {
-      alert('Failed to delete poll.');
-    }
+async function deletePoll() {
+  //Remove Java Popup
+  // if (!confirm('Are you sure you want to delete this poll?')) return;
+  const pollId = currentProfile.value.poll.id;
+  try {
+    await axios.delete(`${API_URL}/api/feed/${pollId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    await fetchPolls();
+  } catch (e) {
+    alert("Failed to delete poll.");
   }
+}
 
-  function calculateAge(birthday) {
-    if (!birthday) return '';
-    const birthDate = new Date(birthday);
-    const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const m = today.getMonth() - birthDate.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
-    }
-    return age;
+function calculateAge(birthday) {
+  if (!birthday) return "";
+  const birthDate = new Date(birthday);
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const m = today.getMonth() - birthDate.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
   }
+  return age;
+}
 
-  function parseMySQLDate(mysqlDateString) {
-    // Converts "YYYY-MM-DD HH:MM:SS" to "YYYY-MM-DDTHH:MM:SS"
-    if (!mysqlDateString) return null;
-    return new Date(mysqlDateString.replace(' ', 'T'));
-  }
+function parseMySQLDate(mysqlDateString) {
+  // Converts "YYYY-MM-DD HH:MM:SS" to "YYYY-MM-DDTHH:MM:SS"
+  if (!mysqlDateString) return null;
+  return new Date(mysqlDateString.replace(" ", "T"));
+}
 
-  function formatDateTime(dateTimeString) {
-    const date = parseMySQLDate(dateTimeString);
-    return date ? date.toLocaleString() : '';
-  }
+function formatDateTime(dateTimeString) {
+  const date = parseMySQLDate(dateTimeString);
+  return date ? date.toLocaleString() : "";
+}
 
-  function timeAgo(dateTimeString) {
-    const posted = parseMySQLDate(dateTimeString);
-    if (!posted) return '';
-    const now = new Date();
-    const diffMs = now - posted;
-    const diffSec = Math.floor(diffMs / 1000);
-    const diffMin = Math.floor(diffSec / 60);
-    const diffHr = Math.floor(diffMin / 60);
-    const diffDay = Math.floor(diffHr / 24);
+function timeAgo(dateTimeString) {
+  const posted = parseMySQLDate(dateTimeString);
+  if (!posted) return "";
+  const now = new Date();
+  const diffMs = now - posted;
+  const diffSec = Math.floor(diffMs / 1000);
+  const diffMin = Math.floor(diffSec / 60);
+  const diffHr = Math.floor(diffMin / 60);
+  const diffDay = Math.floor(diffHr / 24);
 
-    if (diffDay > 0) return `${diffDay} day${diffDay > 1 ? 's' : ''} ago`;
-    if (diffHr > 0) return `${diffHr} hour${diffHr > 1 ? 's' : ''} ago`;
-    if (diffMin > 0) return `${diffMin} minute${diffMin > 1 ? 's' : ''} ago`;
-    if (diffSec > 10) return `${diffSec} seconds ago`;
-    return 'just now';
-  }
+  if (diffDay > 0) return `${diffDay} day${diffDay > 1 ? "s" : ""} ago`;
+  if (diffHr > 0) return `${diffHr} hour${diffHr > 1 ? "s" : ""} ago`;
+  if (diffMin > 0) return `${diffMin} minute${diffMin > 1 ? "s" : ""} ago`;
+  if (diffSec > 10) return `${diffSec} seconds ago`;
+  return "just now";
+}
 
-  const pollDays = ref(0);
-  const pollHours = ref(0);
-  const pollMinutes = ref(0);
+const pollDays = ref(0);
+const pollHours = ref(0);
+const pollMinutes = ref(0);
 
-  const daysOptions = Array.from({ length: 8 }, (_, i) => i);      // 0-7
-  const hoursOptions = Array.from({ length: 24 }, (_, i) => i);     // 0-23
-  const minutesOptions = Array.from({ length: 60 }, (_, i) => i);   // 0-59
+const daysOptions = Array.from({ length: 8 }, (_, i) => i); // 0-7
+const hoursOptions = Array.from({ length: 24 }, (_, i) => i); // 0-23
+const minutesOptions = Array.from({ length: 60 }, (_, i) => i); // 0-59
 
-  function getTimeLeft(createdAt, pollLengthSeconds) {
-    const created = parseMySQLDate(createdAt);
-    if (!created || !pollLengthSeconds) return '';
-    const endTime = new Date(created.getTime() + pollLengthSeconds * 1000);
-    const now = new Date();
-    let diff = Math.max(0, Math.floor((endTime - now) / 1000)); // in seconds
+function getTimeLeft(createdAt, pollLengthSeconds) {
+  const created = parseMySQLDate(createdAt);
+  if (!created || !pollLengthSeconds) return "";
+  const endTime = new Date(created.getTime() + pollLengthSeconds * 1000);
+  const now = new Date();
+  let diff = Math.max(0, Math.floor((endTime - now) / 1000)); // in seconds
 
-    if (diff === 0) return 'Final results';
+  if (diff === 0) return "Final results";
 
-    const days = Math.floor(diff / 86400);
-    diff %= 86400;
-    const hours = Math.floor(diff / 3600);
-    diff %= 3600;
-    const minutes = Math.floor(diff / 60);
+  const days = Math.floor(diff / 86400);
+  diff %= 86400;
+  const hours = Math.floor(diff / 3600);
+  diff %= 3600;
+  const minutes = Math.floor(diff / 60);
 
-    let parts = [];
-    if (days > 0) parts.push(`${days} day${days > 1 ? 's' : ''}`);
-    if (hours > 0) parts.push(`${hours} hour${hours > 1 ? 's' : ''}`);
-    if (minutes > 0 && days === 0) parts.push(`${minutes} min${minutes > 1 ? 's' : ''}`);
-    return parts.join(' ');
-  }
+  let parts = [];
+  if (days > 0) parts.push(`${days} day${days > 1 ? "s" : ""}`);
+  if (hours > 0) parts.push(`${hours} hour${hours > 1 ? "s" : ""}`);
+  if (minutes > 0 && days === 0)
+    parts.push(`${minutes} min${minutes > 1 ? "s" : ""}`);
+  return parts.join(" ");
+}
 
-  const pollEnded = computed(() => {
-    if (!currentProfile.value) return false;
-    const created = parseMySQLDate(currentProfile.value.createdAt);
-    const pollLength = currentProfile.value.pollLengthSeconds;
-    if (!created || !pollLength) return false;
-    const endTime = new Date(created.getTime() + pollLength * 1000);
-    return new Date() > endTime;
-  });
+const pollEnded = computed(() => {
+  if (!currentProfile.value) return false;
+  const created = parseMySQLDate(currentProfile.value.createdAt);
+  const pollLength = currentProfile.value.pollLengthSeconds;
+  if (!created || !pollLength) return false;
+  const endTime = new Date(created.getTime() + pollLength * 1000);
+  return new Date() > endTime;
+});
 
-  const winningOptionIndex = computed(() => {
-    if (!currentProfile.value || !pollEnded.value) return null;
-    const options = currentProfile.value.poll.options;
-    if (!options.length) return null;
-    // Find the index of the option(s) with the most votes
-    const maxVotes = Math.max(...options.map(opt => opt.votes));
-    // If there are multiple winners, highlight all
-    return options
-      .map((opt, idx) => (opt.votes === maxVotes && maxVotes > 0 ? idx : null))
-      .filter(idx => idx !== null);
-  });
+const winningOptionIndex = computed(() => {
+  if (!currentProfile.value || !pollEnded.value) return null;
+  const options = currentProfile.value.poll.options;
+  if (!options.length) return null;
+  // Find the index of the option(s) with the most votes
+  const maxVotes = Math.max(...options.map((opt) => opt.votes));
+  // If there are multiple winners, highlight all
+  return options
+    .map((opt, idx) => (opt.votes === maxVotes && maxVotes > 0 ? idx : null))
+    .filter((idx) => idx !== null);
+});
 
-  const userVoteOptionId = profiles.value[0]?.poll.options.findIndex(opt => opt.voted);
+const userVoteOptionId = profiles.value[0]?.poll.options.findIndex(
+  (opt) => opt.voted
+);
 currentVote.value = userVoteOptionId !== -1 ? userVoteOptionId : null;
 </script>
-
 
 <style scoped>
 /* Style for Delete Popup Confirmation */
@@ -573,23 +656,23 @@ currentVote.value = userVoteOptionId !== -1 ? userVoteOptionId : null;
 
 /* Style for Delete Popup Confirmation */
 
-.side-nav{
-  z-index:unset;
+.side-nav {
+  z-index: unset;
 }
 
-.poll-length-section{
-  color:#322848;
+.poll-length-section {
+  color: #322848;
   font-weight: bold;
 }
 
-.poll-length-select{
-    padding: 0.3rem 0.7rem;
-    border-radius: 6px;
-    border: 1px solid #dbb4d7;
-    background: #322848;
-    color: #fff;
-    font-size: 11pt;
-    margin:5px;
+.poll-length-select {
+  padding: 0.3rem 0.7rem;
+  border-radius: 6px;
+  border: 1px solid #dbb4d7;
+  background: #322848;
+  color: #fff;
+  font-size: 11pt;
+  margin: 5px;
 }
 
 .create-poll-container {
@@ -666,7 +749,7 @@ currentVote.value = userVoteOptionId !== -1 ? userVoteOptionId : null;
 
 .popup-header h2 {
   font-size: 1.5rem;
-  color:#322848;
+  color: #322848;
 }
 
 .close-btn {
@@ -678,7 +761,7 @@ currentVote.value = userVoteOptionId !== -1 ? userVoteOptionId : null;
   border: none;
   cursor: pointer;
   color: #322848;
-  padding:0;
+  padding: 0;
   outline: none;
 }
 
@@ -713,7 +796,7 @@ currentVote.value = userVoteOptionId !== -1 ? userVoteOptionId : null;
 .options-label {
   font-weight: bold;
   margin-bottom: 0.5rem;
-  color:#322848;
+  color: #322848;
 }
 
 .options-inputs {
@@ -748,7 +831,7 @@ currentVote.value = userVoteOptionId !== -1 ? userVoteOptionId : null;
 }
 
 .option-row button {
-  background-color:#322848;
+  background-color: #322848;
   border: none;
   padding: 0 0.5rem;
   font-size: 1.2rem;
@@ -762,7 +845,7 @@ currentVote.value = userVoteOptionId !== -1 ? userVoteOptionId : null;
   border: 1px dashed white;
   padding: 0.4rem 0.7rem;
   cursor: pointer;
-  color:#322848;
+  color: #322848;
   border-radius: 6px;
 }
 
@@ -783,14 +866,14 @@ currentVote.value = userVoteOptionId !== -1 ? userVoteOptionId : null;
 
 .poll-container {
   /* background-color: #080d2a; */
-  background: rgba(255, 255, 255, 0.65); 
+  background: rgba(255, 255, 255, 0.65);
   box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.25);
   backdrop-filter: blur(12px) saturate(180%);
   -webkit-backdrop-filter: blur(12px) saturate(180%);
   border-radius: 12px;
   padding-left: 3rem;
   padding-right: 3rem;
-   padding-top: 1rem;
+  padding-top: 1rem;
   padding-bottom: 1rem;
   width: 100%;
   height: 420px;
@@ -809,8 +892,8 @@ currentVote.value = userVoteOptionId !== -1 ? userVoteOptionId : null;
   color: #080d2a;
   cursor: pointer;
   z-index: 1;
-  flex-direction: column; 
-  gap: 1rem; 
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .nav-button {
@@ -856,7 +939,7 @@ currentVote.value = userVoteOptionId !== -1 ? userVoteOptionId : null;
 
 .poll-content {
   background-color: #322848;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2); 
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(12px) brightness(1.05);
   -webkit-backdrop-filter: blur(12px) brightness(1.05);
   padding: 1.5rem;
@@ -910,8 +993,8 @@ currentVote.value = userVoteOptionId !== -1 ? userVoteOptionId : null;
   padding: 0.7rem;
   border-radius: 10px;
   width: 100%;
-  height: 100px; 
-  overflow-y: auto; 
+  height: 100px;
+  overflow-y: auto;
 }
 
 .poll-options {
@@ -925,7 +1008,7 @@ currentVote.value = userVoteOptionId !== -1 ? userVoteOptionId : null;
   margin-bottom: 0.3rem;
   border: 1px solid #e0e0e0;
   padding: 4px 20px 4px 20px;
-  border-radius: 10px;;
+  border-radius: 10px;
   color: white;
 }
 
@@ -959,14 +1042,14 @@ currentVote.value = userVoteOptionId !== -1 ? userVoteOptionId : null;
 }
 
 .voted {
-  color: #080d2a;
+  /* color: #080d2a; */
   font-weight: bold;
 }
 
-  .styled-no-polls {
-    position: absolute;
-    top: 50%;
-    left: 50%;
+.styled-no-polls {
+  position: absolute;
+  top: 50%;
+  left: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
   color: #28203a;
@@ -1016,25 +1099,24 @@ currentVote.value = userVoteOptionId !== -1 ? userVoteOptionId : null;
   text-align: right;
 }
 
-
-
-
-.fade-enter-active, .fade-leave-active {
-  transition: opacity 1s ease-in-out; 
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 1s ease-in-out;
 }
-.fade-enter, .fade-leave-to {
+.fade-enter,
+.fade-leave-to {
   opacity: 0;
 }
 
 .favorites-wrapper {
   padding-top: 2rem;
-  padding-left:2rem;
-  padding-right:2rem;
+  padding-left: 2rem;
+  padding-right: 2rem;
   overflow: auto;
   color: black;
-  width:100%;
-  margin-left:auto;
-  margin-right:auto;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .favorites-title {
@@ -1063,72 +1145,66 @@ currentVote.value = userVoteOptionId !== -1 ? userVoteOptionId : null;
   margin-top: 20px;
   margin-left: auto;
   margin-right: auto;
-
 }
 
-.left-column, .right-column {
-   display: flex;              /* Enables flex centering */
-  flex-direction: column;     /* Stacks children vertically */
-  justify-content: center;    /* Centers vertically */
-  align-items: center;        /* Centers horizontally */
+.left-column,
+.right-column {
+  display: flex; /* Enables flex centering */
+  flex-direction: column; /* Stacks children vertically */
+  justify-content: center; /* Centers vertically */
+  align-items: center; /* Centers horizontally */
   padding: 15px;
   height: 500px;
 }
 
-
-
-
-
 /* Responsive styles */
 @media (max-width: 768px) {
-    .profile-card {
-      width: 98%;
-    }
-    .front{
-      padding:0;
-    }
-    .discover-top{
-      padding:15px;
-    }
-    .action-section {
-      width:100%;
-    }
-    .poll-content{
-      width: 100%;
-    }
-    .poll-container{
-      padding-left: 20px;
-      padding-right: 20px;
-      padding-top:10px;
-      padding-bottom:10px;
-    }
+  .profile-card {
+    width: 98%;
   }
-  /* Additional styles for very small screens */
-  @media (max-width: 480px) {
-    .profile-card {
-     width: 100%;
-    }
-    .front{
-      padding:0;
-    }
-    .discover-top{
-      padding:15px;
-    }
-    .action-section {
-      width:100%;
-    }
-    .poll-content{
-      width: 100%;
-    }
-    .poll-container{
-      padding-left: 0;
-      padding-right: 0;
-      padding-top:10px;
-      padding-bottom:10px;
-    }
+  .front {
+    padding: 0;
   }
-
-
+  .discover-top {
+    padding: 15px;
+  }
+  .action-section {
+    width: 100%;
+  }
+  .poll-content {
+    width: 100%;
+  }
+  .poll-container {
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+}
+/* Additional styles for very small screens */
+@media (max-width: 480px) {
+  .profile-card {
+    width: 100%;
+  }
+  .front {
+    padding: 0;
+  }
+  .discover-top {
+    padding: 15px;
+  }
+  .action-section {
+    width: 100%;
+  }
+  .poll-content {
+    width: 100%;
+  }
+  .poll-container {
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+}
 
 /* Base white background */
 .animated-background {

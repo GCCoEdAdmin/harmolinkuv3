@@ -890,15 +890,27 @@ async function fetchUserMixtapes() {
 }
 
 function getFullPhotoUrl(photoUrl) {
-  if (
-    !photoUrl ||
-    photoUrl.startsWith("http://") ||
-    photoUrl.startsWith("https://harmolinku-back.onrender.com/uploads/")
-  )
+  if (!photoUrl) {
     return "https://res.cloudinary.com/dmlzg1ouv/image/upload/v1749412320/noimage_jvys4b.jpg";
-  // if (photoUrl.startsWith("http")) return photoUrl;
-  // const baseUrl = import.meta.env.VITE_API_URL;
-  return `${photoUrl}`;
+  }
+
+  // If it's already a full Cloudinary URL, return as is
+  if (photoUrl.startsWith("https://res.cloudinary.com/")) {
+    return photoUrl;
+  }
+
+  // If it's the old backend upload URL, return placeholder
+  if (photoUrl.startsWith("https://harmolinku-back.onrender.com/uploads/")) {
+    return "https://res.cloudinary.com/dmlzg1ouv/image/upload/v1749412320/noimage_jvys4b.jpg";
+  }
+
+  // If it's just an http URL (old format), return placeholder
+  if (photoUrl.startsWith("http://")) {
+    return "https://res.cloudinary.com/dmlzg1ouv/image/upload/v1749412320/noimage_jvys4b.jpg";
+  }
+
+  // Otherwise return the URL as is (should be a valid Cloudinary URL)
+  return photoUrl;
 }
 
 const openMenuIndex = ref(null);
