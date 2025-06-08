@@ -702,7 +702,7 @@ function getFullPhotoUrl(photoUrl) {
   // if (photoUrl.startsWith("http")) return photoUrl;
   // // Always use backend API URL for uploads
   // const baseUrl = import.meta.env.VITE_API_URL;
-  // return `${baseUrl}/${photoUrl}`;
+  return `${photoUrl}`;
 }
 
 // Lifecycle hook
