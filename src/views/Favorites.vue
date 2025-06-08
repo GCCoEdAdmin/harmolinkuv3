@@ -88,7 +88,7 @@
 
           <div class="profile-header">
             <img
-              :src="profile.image && profile.image.trim() !== '' ? profile.image : '/src/assets/default-profile.jpg'"
+              :src="profile.image && profile.image.trim() !== '' ? profile.image : 'https://avatar.iran.liara.run/public/21'"
               alt="Profile Image"
               class="profile-pic"
             />
