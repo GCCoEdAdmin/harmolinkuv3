@@ -51,25 +51,6 @@
               </div>
               <!-- Front Side (Profile Details) -->
               <div class="front" v-if="currentProfile">
-                <!-- Add this debug div temporarily -->
-                <div
-                  style="
-                    font-size: 0.8rem;
-                    background: rgba(0, 0, 0, 0.1);
-                    padding: 0.5rem;
-                    margin-bottom: 1rem;
-                  "
-                >
-                  <strong>DEBUG:</strong>
-                  <br />
-                  Raw cover: {{ currentProfile.mixtapes[0]?.cover }}
-                  <br />
-                  Raw photo_url: {{ currentProfile.mixtapes[0]?.photo_url }}
-                  <br />
-                  Processed URL:
-                  {{ getFullPhotoUrl(currentProfile.mixtapes[0]?.cover) }}
-                </div>
-
                 <div class="discover-top">
                   <div class="refresh-wrapper">
                     <span class="refresh-label">Next Refresh:</span><br />
@@ -91,12 +72,6 @@
                   <img
                     :src="getFullPhotoUrl(currentProfile.mixtapes[0]?.cover)"
                     class="mixtape-image"
-                    @error="
-                      console.log(
-                        'Image failed to load:',
-                        currentProfile.mixtapes[0]?.cover
-                      )
-                    "
                   />
                   <h2 class="mixtape-title-front">
                     {{ currentProfile.mixtapes[0]?.name }}
@@ -123,25 +98,6 @@
 
               <!-- Back Side (Mixtape Details) -->
               <div class="back" v-if="currentProfile">
-                <!-- Add this debug div temporarily -->
-                <div
-                  style="
-                    font-size: 0.8rem;
-                    background: rgba(0, 0, 0, 0.1);
-                    padding: 0.5rem;
-                    margin-bottom: 1rem;
-                  "
-                >
-                  <strong>DEBUG:</strong>
-                  <br />
-                  Raw cover: {{ currentProfile.mixtapes[0]?.cover }}
-                  <br />
-                  Raw photo_url: {{ currentProfile.mixtapes[0]?.photo_url }}
-                  <br />
-                  Processed URL:
-                  {{ getFullPhotoUrl(currentProfile.mixtapes[0]?.cover) }}
-                </div>
-
                 <div class="back-button" @click="flipCard">
                   <i class="fa-solid fa-arrow-left"></i>
                 </div>
@@ -775,9 +731,22 @@ function getFullPhotoUrl(photoUrl) {
     return "https://res.cloudinary.com/dmlzg1ouv/image/upload/v1749412320/noimage_jvys4b.jpg";
   }
 
-  // If it's already a full Cloudinary URL, return as is
+  // Handle the double URL issue - extract the Cloudinary URL from malformed URLs
+  if (
+    photoUrl.includes(
+      "harmolinku-back.onrender.com/https://res.cloudinary.com/"
+    )
+  ) {
+    const cleanUrl = photoUrl.substring(
+      photoUrl.indexOf("https://res.cloudinary.com/")
+    );
+    console.log("Extracted clean Cloudinary URL:", cleanUrl);
+    return cleanUrl;
+  }
+
+  // If it's already a clean Cloudinary URL, return as is
   if (photoUrl.startsWith("https://res.cloudinary.com/")) {
-    console.log("Already a Cloudinary URL, returning as-is:", photoUrl);
+    console.log("Already a clean Cloudinary URL, returning as-is:", photoUrl);
     return photoUrl;
   }
 
