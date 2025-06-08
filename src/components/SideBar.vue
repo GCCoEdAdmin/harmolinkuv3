@@ -885,7 +885,7 @@ async function deleteMixtape(index) {
   // if (!confirm("Are you sure you want to delete this mixtape?")) return;
   try {
     const token = localStorage.getItem("token");
-    await axios.delete(`http://localhost:3000/api/mixtapes/${mix.id}`, {
+    await axios.delete(`${import.meta.env.VITE_API_URL}/api/mixtapes/${mix.id}`, {
       headers:
         {
           Authorization: `Bearer ${token}`,
